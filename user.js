@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
-// @namespace    http://tampermonkey.net/
-// @version      0.7
+// @namespace    Eko-okna
+// @version      0.71
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -276,7 +276,7 @@
         sessionStorage.setItem("HP-aktywne", JSON.stringify(nowyArray));
         staryArray.forEach((el,index)=>{console.log(index+"stary: "+el);
                                 console.log(nowyArray.includes(el));
-                                if(nowyArray.includes(el)===false){$("#"+el+"").remove();console.log("usunięto: "+el);}
+                                if(nowyArray.includes(el)===false){$("#"+el+"").slideUp(1000).remove();console.log("usunięto: "+el);}
                                });
         nowyArray.forEach((el,index)=>{console.log(index+"nowy "+el);
                                console.log(staryArray.includes(el));
@@ -323,16 +323,13 @@
                 content.style.border = "10px solid red;";
                 break;
         }
-        //$(wrapper).hide();
+        $(wrapper).hide();
         wrapper.append(content);
-        //$(wrapper).show();
-        //console.log(`${xjson.status}`);
+        $(wrapper).slideDown(1000);
     }
 
     (function(){
-        //console.log("TEst");
         $(document).ready(()=> {
-            var pStatus = localStorage.getItem("HP-Notify")??null;
             powiadomienie();
             createLayout();
             sessionStorage.clear("HP-aktywne");
