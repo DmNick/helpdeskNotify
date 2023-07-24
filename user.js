@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.61
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -108,7 +108,10 @@
     function display(x){
         //window.UserScript.Notifications.notify('This is a notification', 'You got notified!', 'https://some-icon.png');
         if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://cdn-icons-png.flaticon.com/512/471/471662.png');}
-        if(hasAudio()===true){new Audio("https://sndup.net/t54x/d").play();}
+        if(hasAudio()===true){
+            //new Audio("https://sndup.net/t54x/d").play();
+            new Audio("https://dmnick.ovh/alert.mp3").play();
+        }
     }
 
     function hasAudio() {
