@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    http://tampermonkey.net/
-// @version      0.61
+// @version      0.7
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -43,6 +43,11 @@
      height:400px;
      max-height:400px;
      overflow-y:auto;
+     //-webkit-animation-name: move;
+     //-webkit-animation-duration: 10s;
+     //-webkit-animation-iteration-count: infinite;
+     //-webkit-animation-direction: up;
+     //-webkit-animation-timing-function:linear;
     }
 
     .card > sup {
@@ -58,6 +63,15 @@
       width: 100%;
       display: block;
       margin-bottom: 20px;
+     }
+    }
+
+    @-webkit-keyframes move {
+     0% {
+      transform:translateY(0);
+     }
+     100% {
+      transform:translateY(-100%);
      }
     }
     `;
@@ -141,6 +155,12 @@
             }
     }
 
+    function refresh10s(){
+        if(document.querySelector(".widoczne")){
+            document.querySelector("[ng-click='getTickets()']").click();
+        }
+    }
+
     function createLayout(){
         var layout = document.createElement('div');
         layout.style.position = "fixed";
@@ -156,13 +176,13 @@
         remLayout.innerHTML = "Zamknij";
         remLayout.addEventListener("click",()=>{
             layout.style.top = '';
+            layout.classList.remove("widoczne");
         });
         layout.prepend(remLayout);
 
         var f5Layout = document.createElement('span');
         f5Layout.innerHTML = "Odśwież";
         f5Layout.style.margin = "0 10px";
-        f5Layout.setAttribute("ng-click","getTickets()");
         f5Layout.addEventListener("click",()=>{
             document.querySelector("[ng-click='getTickets()']").click();
         });
@@ -177,6 +197,7 @@
     function openLayout(){
         var layout = document.querySelector("#layoutNotify");
         layout.style.top = "0";
+        layout.classList.add("widoczne");
     }
 
     function przelacznik(){
@@ -262,6 +283,7 @@
                                 if(staryArray.includes(el)===false){console.log("dodano: "+el);}
                               });
         if(staryArray.length != nowyArray.length){console.log("Różnica!!!");}
+        console.log("Ostatni refresh: "+new Date());
         //console.log(staryArray.every(v=>nowyArray.includes(v)));
         if(x>0){
             display(x);
@@ -314,6 +336,7 @@
             powiadomienie();
             createLayout();
             sessionStorage.clear("HP-aktywne");
+            setInterval(refresh10s, 10000);
         });
     })();
 
