@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    http://tampermonkey.net/
-// @version      0.41
+// @version      0.6
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
-// @downloadURL  https://dmnick.ovh/helpdeskotify.js
-// @updateURL    https://dmnick.ovh/helpdeskotify.js
+// @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
+// @updateURL    https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
 // @match        https://helpdesk/
 // @require      https://greasyfork.org/scripts/438798-userscript-notification-framework/code/UserScript%20Notification%20Framework.js?version=1019652
 // @require  	 https://code.jquery.com/jquery-3.7.0.min.js
@@ -83,8 +83,9 @@
                 if(url.indexOf("tickets") > -1){
                     if (this.readyState == 4) {
                         if (this.status == 200){
-                            przelacznik(this);
-                            //check(this);
+                            check(this);
+                            przelacznik();
+                            refreshZegary();
                         }
                     };
                 }
@@ -97,43 +98,44 @@
         };
     };
 
+    function refreshZegary(){
+        document.querySelectorAll(".footerContent").forEach((el) => {
+            let staraData = el.getAttribute("data-cr");
+            el.innerHTML = minutes(staraData);
+        });
+    }
+
     function display(x){
         //window.UserScript.Notifications.notify('This is a notification', 'You got notified!', 'https://some-icon.png');
+        if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://cdn-icons-png.flaticon.com/512/471/471662.png');}
         if(hasAudio()===true){new Audio("https://sndup.net/t54x/d").play();}
-        if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgĹoszenia', x+' nowe/ych zgĹoszeĹ!', 'https://cdn-icons-png.flaticon.com/512/471/471662.png');}
     }
 
     function hasAudio() {
-        return new Promise(function (resolve) {
             if (localStorage.getItem("HP-Audio") == 'true'){
-                resolve(true);
+                return(true);
             }
             else {
-                resolve(false);
+                return(false);
             }
-        });
     }
 
     function hasNotify() {
-        return new Promise(function (resolve) {
             if (localStorage.getItem("HP-Notify") == 'true'){
-                resolve(true);
+                return(true);
             }
             else {
-                resolve(false);
+                return(false);
             }
-        });
     }
 
     function hasAktywne() {
-        return new Promise(function (resolve) {
             if (localStorage.getItem("HP-aktywne") == 'true'){
-                resolve(true);
+                return(true);
             }
             else {
-                resolve(false);
+                return(false);
             }
-        });
     }
 
     function createLayout(){
@@ -155,13 +157,13 @@
         layout.prepend(remLayout);
 
         var f5Layout = document.createElement('span');
-        f5Layout.innerHTML = "OdĹwieĹź";
+        f5Layout.innerHTML = "Odśwież";
         f5Layout.style.margin = "0 10px";
         f5Layout.setAttribute("ng-click","getTickets()");
         f5Layout.addEventListener("click",()=>{
             document.querySelector("[ng-click='getTickets()']").click();
         });
-        //f5Layout.innerHTML = [`<a class="flex-a-center pl-2 btn-icon" ng-click="getTickets()" title="OdĹwieĹź teraz"><i class="icon-hdicon-HD_all_Reload f-18" aria-hidden="true"></i></a>`].join('');
+        //f5Layout.innerHTML = [`<a class="flex-a-center pl-2 btn-icon" ng-click="getTickets()" title="Odśwież teraz"><i class="icon-hdicon-HD_all_Reload f-18" aria-hidden="true"></i></a>`].join('');
         layout.prepend(f5Layout);
 
         var row = document.createElement('div');
@@ -174,14 +176,15 @@
         layout.style.top = "0";
     }
 
-    function przelacznik(xjson){
+    function przelacznik(){
         var kotwica = document.querySelector("#page-heading > div");
-        if(!document.querySelector("#kotwica")){
+        if(!document.querySelector("#kotwica") && kotwica){
+            console.log("wczytano przelacznik");
             var newElementDiv = document.createElement("div"),newElementLabel = document.createElement("label"),newElement = document.createElement("input");
             kotwica.append(newElementDiv);
             newElementDiv.style.marginLeft = "10px";
             newElementLabel.setAttribute("for","kotwica");
-            newElementLabel.innerHTML = "Powiadomienia";
+            newElementLabel.innerHTML = "Notify";
             newElementDiv.append(newElementLabel);
             newElement.type = "checkbox";
             newElement.id = "kotwica";
@@ -192,13 +195,15 @@
             newElementDiv.prepend(newElement);
             newElement.addEventListener("click",()=>{
                 localStorage.setItem("HP-Notify",newElement.checked);
+                console.log("localStorage('HP-Notify'): "+localStorage.getItem("HP-Notify"));
+                console.log("newElement.checked: "+newElement.checked);
             });
             var newAudioDiv = document.createElement("div");
             kotwica.append(newAudioDiv);
             newAudioDiv.style.marginLeft = "10px";
             var newAudioLabel = document.createElement("label");
             newAudioLabel.setAttribute("for","kAudio");
-            newAudioLabel.innerHTML = "z dzwiÄkiem";
+            newAudioLabel.innerHTML = "Audio";
             newAudioDiv.append(newAudioLabel);
             var newAudio = document.createElement("input");
             newAudio.type = "checkbox";
@@ -214,18 +219,13 @@
 
             var openLayoutButton = document.createElement('div');
             openLayoutButton.innerHTML = [`
-            <a class="btn-icon" title="OtwĂłrz layout"><i class="icon-hdicon-HD_all_Settings f-16"></i></a>
+            <a class="btn-icon" title="Otwórz layout"><i class="icon-hdicon-HD_all_Settings f-16"></i></a>
             `].join('');
             openLayoutButton.addEventListener("click",()=>{
                 openLayout();
             });
             kotwica.append(openLayoutButton);
 
-        }
-        else {
-            if(hasNotify()){
-                check(xjson);
-            }
         }
     }
 
@@ -237,29 +237,28 @@
         var staryArray = JSON.parse(sessionStorage.getItem("HP-aktywne"))??[];
         if(jsonResponse.items){
             jsonResponse.items.forEach((el)=>{
-                if(el.assignee === null && el.status === "New" && sessionStorage.getItem(el.displayId)===null){
-                    if(staryArray.includes(el.displayId)===false){newAlertOnLayout(el);}
+                if( el.assignee === null && el.status === "New" /* && sessionStorage.getItem(el.displayId)===null*/){
+                    if(staryArray.includes(el.displayId)===false){newAlertOnLayout(el);x++;}
 
 
-                    console.log(el);
+                    //console.log(el);
                     //let data = new Date.parse(el.creationDate).toString();
-                    console.log(minutes(new Date(el.creationDate)));
+                    //console.log(minutes(new Date(el.creationDate)));
                     sessionStorage.setItem(el.displayId,1);
                     nowyArray.push(el.displayId);
-                    x++;
                 }
             });
         }
         sessionStorage.setItem("HP-aktywne", JSON.stringify(nowyArray));
         staryArray.forEach((el,index)=>{console.log(index+"stary: "+el);
                                 console.log(nowyArray.includes(el));
-                                if(nowyArray.includes(el)===false){$("#"+el+"").remove();console.log("usuniÄto: "+el);}
+                                if(nowyArray.includes(el)===false){$("#"+el+"").remove();console.log("usunięto: "+el);}
                                });
         nowyArray.forEach((el,index)=>{console.log(index+"nowy "+el);
                                console.log(staryArray.includes(el));
                                 if(staryArray.includes(el)===false){console.log("dodano: "+el);}
                               });
-        if(staryArray.length != nowyArray.length){console.log("RĂłĹźnica!!!");}
+        if(staryArray.length != nowyArray.length){console.log("Różnica!!!");}
         //console.log(staryArray.every(v=>nowyArray.includes(v)));
         if(x>0){
             display(x);
@@ -281,7 +280,7 @@
           <h3>${xjson.subject} (${xjson.displayId})</h3>
           <p>${xjson.description}</p>
           <p>~${xjson.creatorUser.fullName}</p>
-          <sub class="footerContent">${minutes(new Date(xjson.creationDate))}</sub>
+          <sub class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</sub>
         `].join('');
         switch(xjson.priority.name){
                 case('Niski'):
@@ -299,10 +298,10 @@
                 content.style.border = "10px solid red;";
                 break;
         }
-        $(wrapper).hide();
+        //$(wrapper).hide();
         wrapper.append(content);
-        $(wrapper).show();
-        console.log(`${xjson.status}`);
+        //$(wrapper).show();
+        //console.log(`${xjson.status}`);
     }
 
     (function(){
