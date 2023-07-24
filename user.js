@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.71
+// @version      0.72
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -120,11 +120,10 @@
     }
 
     function display(x){
-        //window.UserScript.Notifications.notify('This is a notification', 'You got notified!', 'https://some-icon.png');
-        if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://cdn-icons-png.flaticon.com/512/471/471662.png');}
+        if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://dmnick.ovh/h/icon.png');}
         if(hasAudio()===true){
             //new Audio("https://sndup.net/t54x/d").play();
-            new Audio("https://dmnick.ovh/alert.mp3").play();
+            new Audio("https://dmnick.ovh/h/alert.mp3").play();
         }
     }
 
@@ -139,15 +138,6 @@
 
     function hasNotify() {
             if (localStorage.getItem("HP-Notify") == 'true'){
-                return(true);
-            }
-            else {
-                return(false);
-            }
-    }
-
-    function hasAktywne() {
-            if (localStorage.getItem("HP-aktywne") == 'true'){
                 return(true);
             }
             else {
@@ -268,18 +258,18 @@
                     //console.log(el);
                     //let data = new Date.parse(el.creationDate).toString();
                     //console.log(minutes(new Date(el.creationDate)));
-                    sessionStorage.setItem(el.displayId,1);
+                    //sessionStorage.setItem(el.displayId,1);
                     nowyArray.push(el.displayId);
                 }
             });
         }
         sessionStorage.setItem("HP-aktywne", JSON.stringify(nowyArray));
         staryArray.forEach((el,index)=>{console.log(index+"stary: "+el);
-                                console.log(nowyArray.includes(el));
-                                if(nowyArray.includes(el)===false){$("#"+el+"").slideUp(1000).remove();console.log("usunięto: "+el);}
+                                //console.log(nowyArray.includes(el));
+                                if(nowyArray.includes(el)===false){$("#"+el+"").slideUp(1000, function(){this.remove()});console.log("usunięto: "+el);}
                                });
         nowyArray.forEach((el,index)=>{console.log(index+"nowy "+el);
-                               console.log(staryArray.includes(el));
+                               //console.log(staryArray.includes(el));
                                 if(staryArray.includes(el)===false){console.log("dodano: "+el);}
                               });
         if(staryArray.length != nowyArray.length){console.log("Różnica!!!");}
