@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.75
+// @version      0.76
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -101,6 +101,50 @@
         xx = xx.replaceAll('<br>', ' ');
         xx = xx.replaceAll('<br/>', ' ');
         return xx;
+    }
+
+    const delAlertOnLayout = (el) => {
+        let stary = $("#"+el+"");
+        stary.slideUp(1000, function(){this.remove()});
+    }
+
+    const newAlertOnLayout = (xjson) => {
+        let layout = document.querySelector("#layoutNotify > .row");
+        let wrapper = document.createElement("div");
+        wrapper.classList = "column";
+        wrapper.id = xjson.displayId;
+        layout.append(wrapper);
+        let content = document.createElement("div");
+        content.className = "card";
+        content.style.display = "flex";
+        content.style.flexDirection = "column";
+        content.innerHTML = [`
+          <sup>${xjson.status} - ${xjson.category.name} - ${xjson.priority.name}</sup>
+          <h1>${xjson.subject} (${xjson.displayId})</h1>
+          <h3>${bezParagrafu(xjson.description)}</h3>
+          <h3>~${xjson.creatorUser.fullName}</h3>
+          <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
+        `].join('');
+        switch(xjson.priority.name){
+                case('Niski'):
+                content.style.backgroundColor = "lightgreen";
+                break;
+                case('Wysoki'):
+                content.style.backgroundColor = "indianred";
+                break;
+                case('Krytyczny'):
+                content.style.backgroundColor = "red";
+                break;
+                case('Bloker'):
+                content.style.backgroundColor = "black";
+                content.style.color = "white";
+                content.style.border = "10px solid red;";
+                break;
+        }
+        $(wrapper).hide();
+        wrapper.append(content);
+        $(wrapper).slideDown(1000);
+        //console.log(bezParagrafu(xjson.description));
     }
 
     function powiadomienie() {
@@ -296,49 +340,7 @@
         }
     }
 
-    const delAlertOnLayout = (el) => {
-        let stary = $("#"+el+"");
-        stary.slideUp(1000, function(){this.remove()});
-    }
 
-    const newAlertOnLayout = (xjson) => {
-        let layout = document.querySelector("#layoutNotify > .row");
-        let wrapper = document.createElement("div");
-        wrapper.classList = "column";
-        wrapper.id = xjson.displayId;
-        layout.append(wrapper);
-        let content = document.createElement("div");
-        content.className = "card";
-        content.style.display = "flex";
-        content.style.flexDirection = "column";
-        content.innerHTML = [`
-          <sup>${xjson.status} - ${xjson.category.name} - ${xjson.priority.name}</sup>
-          <h1>${xjson.subject} (${xjson.displayId})</h1>
-          <h3>${bezParagrafu(xjson.description)}</h3>
-          <h3>~${xjson.creatorUser.fullName}</h3>
-          <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
-        `].join('');
-        switch(xjson.priority.name){
-                case('Niski'):
-                content.style.backgroundColor = "lightgreen";
-                break;
-                case('Wysoki'):
-                content.style.backgroundColor = "indianred";
-                break;
-                case('Krytyczny'):
-                content.style.backgroundColor = "red";
-                break;
-                case('Bloker'):
-                content.style.backgroundColor = "black";
-                content.style.color = "white";
-                content.style.border = "10px solid red;";
-                break;
-        }
-        $(wrapper).hide();
-        wrapper.append(content);
-        $(wrapper).slideDown(1000);
-        console.log(bezParagrafu(xjson.description));
-    }
 
     (function(){
         $(document).ready(()=> {
