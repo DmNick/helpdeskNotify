@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.76
+// @version      0.78
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -58,6 +58,16 @@
      margin-top: auto;
     }
 
+    .widoczne {
+     animation: move 1s ease-out;
+     animation-fill-mode: forwards;
+    }
+
+    .niewidoczne {
+     animation: moveOut 1s ease-out;
+     animation-fill-mode: forwards;
+    }
+
     @media screen and (max-width: 600px) {
      .column {
       width: 100%;
@@ -68,10 +78,22 @@
 
     @-webkit-keyframes move {
      0% {
-      transform:translateY(0);
+      top: 100%;
+     }
+     95% {
+      top: -5%;
      }
      100% {
-      transform:translateY(-100%);
+      top: 0;
+     }
+    }
+
+    @-webkit-keyframes moveOut {
+     0% {
+      top: 0;
+     }
+     100% {
+      top: 100%;
      }
     }
     `;
@@ -222,8 +244,9 @@
         var remLayout = document.createElement('span');
         remLayout.innerHTML = "Zamknij";
         remLayout.addEventListener("click",()=>{
-            layout.style.top = '';
+            //layout.style.top = '';
             layout.classList.remove("widoczne");
+            layout.classList.add("niewidoczne");
         });
         layout.prepend(remLayout);
 
@@ -243,7 +266,8 @@
 
     function openLayout(){
         var layout = document.querySelector("#layoutNotify");
-        layout.style.top = "0";
+        //layout.style.top = "0";
+        layout.classList.remove("niewidoczne");
         layout.classList.add("widoczne");
     }
 
@@ -315,11 +339,9 @@
                     }
                     nowyArray.push(el.displayId);
                 }
-                else {
-                    if(nowyArray.includes(el.displayId)===false && staryArray.includes(el.displayId)){
+                else if(nowyArray.includes(el.displayId)===false && staryArray.includes(el.displayId)){
                         delAlertOnLayout(el.displayId);
                         console.log("usunięto: "+el.displayId);
-                    }
                 }
             });
         }
