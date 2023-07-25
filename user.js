@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.72
+// @version      0.75
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -9,7 +9,7 @@
 // @match        https://helpdesk/
 // @require      https://greasyfork.org/scripts/438798-userscript-notification-framework/code/UserScript%20Notification%20Framework.js?version=1019652
 // @require  	 https://code.jquery.com/jquery-3.7.0.min.js
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=undefined.helpdesk
+// @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAiJJREFUOE+Vk11Ik2EUx//Pq9t4xbWl9MaimhuIXWREVwXShTg/sPAmGrMmU1sXejEoyA0aJoqWedtNYYmzxL5wlOUHSRdB3teFCG4xa1rhaJhaNnfC593z1sUu5nNzzv9/zvmdhwceRkQM/awKCkagQEG2U5AxdZmYysRtgNEA6mDFKzp2GXT4FqDfk5WRzZSm8sDoOVbTpR1F6SM9OQ+KxvywDowmQFunv+9qswDo3xjA6Alos35j19t3BuS3BSrgZ+0aB+Q9qsN242sNJnSVy4+95kKcKC9FoM2p1QunjSog6fjBTf3QKWx53msNQjsuBDDzsA/XegdRbDaio+087zGNm8HoPijRsMoNOVSBTfc7DSB0rfs6JkPqI1e6/JgdvcnzovFiMLoN+tb0lRvG0EmQwaQB2O8k1txzqPd0YmKoi/vO9j6M3QnwXHm5H4z6QcsX4+qVxiqRdM5qAKHPtnbhxWAn92uagpga7ua5ZeSACvjsWlKv9NSBxLkZDSB0g7cb4XtB+G7cxdEyK7yuGt5zcPQQ2K8gaKX1kwqYbkai+sE/QEY3+gbAGEN1xXEErzQjFovxHuvjErB1P2jFu8gNm83GYzQahcVigSzLiEQisNvt3CciXts5UmoDJeFyFfClZUHbmmtiXhzGvg89cQ5Y8sznOgcptQ5T7BmUj70AwxmW9IGkfHVeEt/1P1z6D6AT3xmAwciLcUi4hKs0+RdlXsVylWyVrQAAAABJRU5ErkJggg==
 // @grant        none
 // ==/UserScript==
 /* global $ */
@@ -76,6 +76,10 @@
     }
     `;
 
+    function refreshList(){
+        document.querySelector("[ng-click='getTickets()']").click();
+    }
+
     function minutes(el){
         let currDate = new Date();
         let totalSekund = Math.abs(currDate-el)/1000;
@@ -90,11 +94,20 @@
         }
     }
 
+    function bezParagrafu(x){
+        var xx = x.replaceAll('<p>',' ');
+        xx = xx.replaceAll('</p>', ' ');
+        xx = xx.replaceAll('</br>', ' ');
+        xx = xx.replaceAll('<br>', ' ');
+        xx = xx.replaceAll('<br/>', ' ');
+        return xx;
+    }
+
     function powiadomienie() {
         var origOpen = XMLHttpRequest.prototype.open;
         XMLHttpRequest.prototype.open = function(method, url) {
             this.addEventListener('load', function() {
-                if(url.indexOf("tickets") > -1){
+                if(url.indexOf("tickets?") > -1){
                     if (this.readyState == 4) {
                         if (this.status == 200){
                             check(this);
@@ -147,7 +160,7 @@
 
     function refresh10s(){
         if(document.querySelector(".widoczne")){
-            document.querySelector("[ng-click='getTickets()']").click();
+            refreshList();
         }
     }
 
@@ -174,7 +187,7 @@
         f5Layout.innerHTML = "Odśwież";
         f5Layout.style.margin = "0 10px";
         f5Layout.addEventListener("click",()=>{
-            document.querySelector("[ng-click='getTickets()']").click();
+            refreshList();
         });
         //f5Layout.innerHTML = [`<a class="flex-a-center pl-2 btn-icon" ng-click="getTickets()" title="Odśwież teraz"><i class="icon-hdicon-HD_all_Reload f-18" aria-hidden="true"></i></a>`].join('');
         layout.prepend(f5Layout);
@@ -247,37 +260,45 @@
         var jsonResponse = JSON.parse(xjson.responseText);
         var x = 0;
         var nowyArray = [];
-
         var staryArray = JSON.parse(sessionStorage.getItem("HP-aktywne"))??[];
+
         if(jsonResponse.items){
             jsonResponse.items.forEach((el)=>{
                 if( el.assignee === null && el.status === "New" /* && sessionStorage.getItem(el.displayId)===null*/){
-                    if(staryArray.includes(el.displayId)===false){newAlertOnLayout(el);x++;}
-
-
-                    //console.log(el);
-                    //let data = new Date.parse(el.creationDate).toString();
-                    //console.log(minutes(new Date(el.creationDate)));
-                    //sessionStorage.setItem(el.displayId,1);
+                    if(staryArray.includes(el.displayId)===false){
+                        newAlertOnLayout(el);x++;
+                        console.log("dodano: "+el.displayId);
+                    }
                     nowyArray.push(el.displayId);
+                }
+                else {
+                    if(nowyArray.includes(el.displayId)===false && staryArray.includes(el.displayId)){
+                        delAlertOnLayout(el.displayId);
+                        console.log("usunięto: "+el.displayId);
+                    }
                 }
             });
         }
         sessionStorage.setItem("HP-aktywne", JSON.stringify(nowyArray));
-        staryArray.forEach((el,index)=>{console.log(index+"stary: "+el);
-                                //console.log(nowyArray.includes(el));
-                                if(nowyArray.includes(el)===false){$("#"+el+"").slideUp(1000, function(){this.remove()});console.log("usunięto: "+el);}
-                               });
-        nowyArray.forEach((el,index)=>{console.log(index+"nowy "+el);
-                               //console.log(staryArray.includes(el));
-                                if(staryArray.includes(el)===false){console.log("dodano: "+el);}
-                              });
+        //staryArray.forEach((el,index)=>{console.log(index+"stary: "+el);
+        //                        //console.log(nowyArray.includes(el));
+        //                        if(nowyArray.includes(el)===false){delAlertOnLayout(el);console.log("usunięto: "+el);}
+        //                       });
+        //nowyArray.forEach((el,index)=>{console.log(index+"nowy "+el);
+        //                       //console.log(staryArray.includes(el));
+        //                        if(staryArray.includes(el)===false){console.log("dodano: "+el);}
+        //                      });
         if(staryArray.length != nowyArray.length){console.log("Różnica!!!");}
         console.log("Ostatni refresh: "+new Date());
-        //console.log(staryArray.every(v=>nowyArray.includes(v)));
+
         if(x>0){
             display(x);
         }
+    }
+
+    const delAlertOnLayout = (el) => {
+        let stary = $("#"+el+"");
+        stary.slideUp(1000, function(){this.remove()});
     }
 
     const newAlertOnLayout = (xjson) => {
@@ -292,10 +313,10 @@
         content.style.flexDirection = "column";
         content.innerHTML = [`
           <sup>${xjson.status} - ${xjson.category.name} - ${xjson.priority.name}</sup>
-          <h3>${xjson.subject} (${xjson.displayId})</h3>
-          <p>${xjson.description}</p>
-          <p>~${xjson.creatorUser.fullName}</p>
-          <sub class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</sub>
+          <h1>${xjson.subject} (${xjson.displayId})</h1>
+          <h3>${bezParagrafu(xjson.description)}</h3>
+          <h3>~${xjson.creatorUser.fullName}</h3>
+          <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
         `].join('');
         switch(xjson.priority.name){
                 case('Niski'):
@@ -316,6 +337,7 @@
         $(wrapper).hide();
         wrapper.append(content);
         $(wrapper).slideDown(1000);
+        console.log(bezParagrafu(xjson.description));
     }
 
     (function(){
