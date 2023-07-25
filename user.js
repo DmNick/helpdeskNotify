@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.78
+// @version      0.80
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -334,22 +334,25 @@
             jsonResponse.items.forEach((el)=>{
                 if( el.assignee === null && el.status === "New" /* && sessionStorage.getItem(el.displayId)===null*/){
                     if(staryArray.includes(el.displayId)===false){
-                        newAlertOnLayout(el);x++;
+                        newAlertOnLayout(el);
+                        x++;
                         console.log("dodano: "+el.displayId);
                     }
                     nowyArray.push(el.displayId);
                 }
-                else if(nowyArray.includes(el.displayId)===false && staryArray.includes(el.displayId)){
-                        delAlertOnLayout(el.displayId);
-                        console.log("usunięto: "+el.displayId);
-                }
+        //         else {
+        //             if(nowyArray.includes(el.displayId)===false && staryArray.includes(el.displayId)){
+        //                 delAlertOnLayout(el.displayId);
+        //                 console.log("usunięto: "+el.displayId);
+        //             }
+        //         }
             });
         }
         sessionStorage.setItem("HP-aktywne", JSON.stringify(nowyArray));
-        //staryArray.forEach((el,index)=>{console.log(index+"stary: "+el);
-        //                        //console.log(nowyArray.includes(el));
-        //                        if(nowyArray.includes(el)===false){delAlertOnLayout(el);console.log("usunięto: "+el);}
-        //                       });
+        staryArray.forEach((el,index)=>{console.log(index+"stary: "+el);
+                                //console.log(nowyArray.includes(el));
+                                if(nowyArray.includes(el)===false){delAlertOnLayout(el);console.log("usunięto: "+el);}
+                               });
         //nowyArray.forEach((el,index)=>{console.log(index+"nowy "+el);
         //                       //console.log(staryArray.includes(el));
         //                        if(staryArray.includes(el)===false){console.log("dodano: "+el);}
