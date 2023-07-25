@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.80
+// @version      0.81
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -68,6 +68,10 @@
      animation-fill-mode: forwards;
     }
 
+    .warning {
+     animation: warningPulse 2s ease-out infinite;
+    }
+
     @media screen and (max-width: 600px) {
      .column {
       width: 100%;
@@ -94,6 +98,18 @@
      }
      100% {
       top: 100%;
+     }
+    }
+
+    @-webkit-keyframes warningPulse {
+     0% {
+      border: 10px solid red;
+     }
+     50% {
+      border: 10px solid white;
+     }
+     100% {
+      border: 10px solid red;
      }
     }
     `;
@@ -195,6 +211,9 @@
         document.querySelectorAll(".footerContent").forEach((el) => {
             let staraData = el.getAttribute("data-cr");
             el.innerHTML = minutes(staraData);
+            if(parseInt(Math.abs(Date.parse(new Date()) - staraData)/1000/60)>15){
+                el.closest(".card").classList.add("warning");
+            }
         });
     }
 
