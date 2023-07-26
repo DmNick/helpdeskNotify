@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.81
+// @version      0.82
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -72,6 +72,16 @@
      animation: warningPulse 2s ease-out infinite;
     }
 
+    #layoutNotify {
+     position: fixed;
+     top: 100%;
+     width: 100%;
+     height: 100%;
+     background-color: grey;
+     z-index: 1000;
+     overflow-y: auto;
+    }
+
     @media screen and (max-width: 600px) {
      .column {
       width: 100%;
@@ -103,13 +113,17 @@
 
     @-webkit-keyframes warningPulse {
      0% {
-      border: 10px solid red;
+      //border: 10px solid red;
+      background-color: red;
      }
      50% {
-      border: 10px solid white;
+      //border: 10px solid white;
+      background-color: white;
+      color:black;
      }
      100% {
-      border: 10px solid red;
+      //border: 10px solid red;
+      background-color: red;
      }
     }
     `;
@@ -251,13 +265,6 @@
 
     function createLayout(){
         var layout = document.createElement('div');
-        layout.style.position = "fixed";
-        layout.style.top = '';
-        layout.style.width = "100%";
-        layout.style.height = "100%";
-        layout.style.backgroundColor = "grey";
-        layout.style.zIndex = "999999";
-        layout.style.overflowY = "auto";
         layout.id = "layoutNotify";
         document.body.append(layout);
         var remLayout = document.createElement('span');
@@ -303,15 +310,16 @@
             newElement.type = "checkbox";
             newElement.id = "kotwica";
             newElement.name = "przelacznik";
+
             if(hasNotify()===true){
                 newElement.checked = true;
             }
+
             newElementDiv.prepend(newElement);
             newElement.addEventListener("click",()=>{
                 localStorage.setItem("HP-Notify",newElement.checked);
-                console.log("localStorage('HP-Notify'): "+localStorage.getItem("HP-Notify"));
-                console.log("newElement.checked: "+newElement.checked);
             });
+
             var newAudioDiv = document.createElement("div");
             kotwica.append(newAudioDiv);
             newAudioDiv.style.marginLeft = "10px";
@@ -323,23 +331,26 @@
             newAudio.type = "checkbox";
             newAudio.id = "kAudio";
             newAudio.name = "Audio";
+
             if(hasAudio()){
                 newAudio.checked = true;
             }
+
             newAudio.addEventListener("click",()=>{
                 localStorage.setItem("HP-Audio",newAudio.checked);
             });
-            newAudioDiv.prepend(newAudio);
 
+            newAudioDiv.prepend(newAudio);
             var openLayoutButton = document.createElement('div');
             openLayoutButton.innerHTML = [`
             <a class="btn-icon" title="Otwórz layout"><i class="icon-hdicon-HD_all_Settings f-16"></i></a>
             `].join('');
+
             openLayoutButton.addEventListener("click",()=>{
                 openLayout();
             });
-            kotwica.append(openLayoutButton);
 
+            kotwica.append(openLayoutButton);
         }
     }
 
@@ -368,10 +379,9 @@
             });
         }
         sessionStorage.setItem("HP-aktywne", JSON.stringify(nowyArray));
-        staryArray.forEach((el,index)=>{console.log(index+"stary: "+el);
-                                //console.log(nowyArray.includes(el));
-                                if(nowyArray.includes(el)===false){delAlertOnLayout(el);console.log("usunięto: "+el);}
-                               });
+        staryArray.forEach((el,index)=>{
+            if(nowyArray.includes(el)===false){delAlertOnLayout(el);console.log("usunięto: "+el);}
+        });
         //nowyArray.forEach((el,index)=>{console.log(index+"nowy "+el);
         //                       //console.log(staryArray.includes(el));
         //                        if(staryArray.includes(el)===false){console.log("dodano: "+el);}
