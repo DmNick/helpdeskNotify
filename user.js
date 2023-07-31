@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.82
+// @version      0.83
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
 // @updateURL    https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
 // @match        https://helpdesk/
-// @require      https://greasyfork.org/scripts/438798-userscript-notification-framework/code/UserScript%20Notification%20Framework.js?version=1019652
+// @require      https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/notifications.js
 // @require  	 https://code.jquery.com/jquery-3.7.0.min.js
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAiJJREFUOE+Vk11Ik2EUx//Pq9t4xbWl9MaimhuIXWREVwXShTg/sPAmGrMmU1sXejEoyA0aJoqWedtNYYmzxL5wlOUHSRdB3teFCG4xa1rhaJhaNnfC593z1sUu5nNzzv9/zvmdhwceRkQM/awKCkagQEG2U5AxdZmYysRtgNEA6mDFKzp2GXT4FqDfk5WRzZSm8sDoOVbTpR1F6SM9OQ+KxvywDowmQFunv+9qswDo3xjA6Alos35j19t3BuS3BSrgZ+0aB+Q9qsN242sNJnSVy4+95kKcKC9FoM2p1QunjSog6fjBTf3QKWx53msNQjsuBDDzsA/XegdRbDaio+087zGNm8HoPijRsMoNOVSBTfc7DSB0rfs6JkPqI1e6/JgdvcnzovFiMLoN+tb0lRvG0EmQwaQB2O8k1txzqPd0YmKoi/vO9j6M3QnwXHm5H4z6QcsX4+qVxiqRdM5qAKHPtnbhxWAn92uagpga7ua5ZeSACvjsWlKv9NSBxLkZDSB0g7cb4XtB+G7cxdEyK7yuGt5zcPQQ2K8gaKX1kwqYbkai+sE/QEY3+gbAGEN1xXEErzQjFovxHuvjErB1P2jFu8gNm83GYzQahcVigSzLiEQisNvt3CciXts5UmoDJeFyFfClZUHbmmtiXhzGvg89cQ5Y8sznOgcptQ5T7BmUj70AwxmW9IGkfHVeEt/1P1z6D6AT3xmAwciLcUi4hKs0+RdlXsVylWyVrQAAAABJRU5ErkJggg==
 // @grant        none
@@ -20,6 +20,10 @@
     var styleElem = document.head.appendChild(document.createElement("style"));
 
     styleElem.innerHTML = `
+    #toast-container {
+     z-index: 999!important;
+    }
+
     .row {margin: 0px;}
 
     .row:after {
@@ -225,7 +229,10 @@
         document.querySelectorAll(".footerContent").forEach((el) => {
             let staraData = el.getAttribute("data-cr");
             el.innerHTML = minutes(staraData);
-            if(parseInt(Math.abs(Date.parse(new Date()) - staraData)/1000/60)>15){
+            let minuty = parseInt(Math.abs(Date.parse(new Date()) - staraData)/1000/60);
+            if(minuty>15 && minuty <30){
+                el.closest(".card").style.backgroundColor = "orange";
+            } else if (minuty>30) {
                 el.closest(".card").classList.add("warning");
             }
         });
