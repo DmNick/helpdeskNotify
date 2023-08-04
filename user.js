@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.83
+// @version      0.84
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -84,6 +84,10 @@
      background-color: grey;
      z-index: 1000;
      overflow-y: auto;
+    }
+
+    [ng-model='ticket.description'] > p > span {
+     color: #c6d0dc!important;
     }
 
     @media screen and (max-width: 600px) {
@@ -238,11 +242,16 @@
         });
     }
 
-    function display(x){
+    function display(x,type){
         if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://dmnick.ovh/h/icon.png');}
         if(hasAudio()===true){
+            if(type==="awaria"){
+                new Audio("https://dmnick.ovh/h/awaria.mp3").play();
+            }
+            else {
+                new Audio("https://dmnick.ovh/h/alert.mp3").play();
+            }
             //new Audio("https://sndup.net/t54x/d").play();
-            new Audio("https://dmnick.ovh/h/alert.mp3").play();
         }
     }
 
@@ -366,14 +375,15 @@
         var x = 0;
         var nowyArray = [];
         var staryArray = JSON.parse(sessionStorage.getItem("HP-aktywne"))??[];
-
+        let type = "normal";
         if(jsonResponse.items){
             jsonResponse.items.forEach((el)=>{
-                if( el.assignee === null && el.status === "New" /* && sessionStorage.getItem(el.displayId)===null*/){
+                if( el.assignee === null &&  el.status === "New" /* && sessionStorage.getItem(el.displayId)===null*/){
                     if(staryArray.includes(el.displayId)===false){
                         newAlertOnLayout(el);
                         x++;
                         console.log("dodano: "+el.displayId);
+                        if(el.subject.toLowerCase().includes('awaria')){type="awaria"}
                     }
                     nowyArray.push(el.displayId);
                 }
@@ -397,7 +407,7 @@
         console.log("Ostatni refresh: "+new Date());
 
         if(x>0){
-            display(x);
+            display(x, type);
         }
     }
 
