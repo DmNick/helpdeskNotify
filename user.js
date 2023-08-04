@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.84
+// @version      0.85
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -155,12 +155,9 @@
     }
 
     function bezParagrafu(x){
-        var xx = x.replaceAll('<p>',' ');
-        xx = xx.replaceAll('</p>', ' ');
-        xx = xx.replaceAll('</br>', ' ');
-        xx = xx.replaceAll('<br>', ' ');
-        xx = xx.replaceAll('<br/>', ' ');
-        return xx;
+        let text = document.createElement("div");
+        text.innerHTML = x;
+        return text.innerText;
     }
 
     const delAlertOnLayout = (el) => {
@@ -378,7 +375,8 @@
         let type = "normal";
         if(jsonResponse.items){
             jsonResponse.items.forEach((el)=>{
-                if( el.assignee === null &&  el.status === "New" /* && sessionStorage.getItem(el.displayId)===null*/){
+                console.log(el.description);
+                if(el.assignee === null && el.status === "New" /* && sessionStorage.getItem(el.displayId)===null*/){
                     if(staryArray.includes(el.displayId)===false){
                         newAlertOnLayout(el);
                         x++;
@@ -419,6 +417,9 @@
             createLayout();
             sessionStorage.clear("HP-aktywne");
             setInterval(refresh10s, 10000);
+            if(localStorage.getItem("HP-OpenLayout")=='true'){
+                openLayout();
+            }
         });
     })();
 
