@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.90
+// @version      0.91
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -184,6 +184,65 @@
         return text.innerText;
     }
 
+    function audioAlert(type){
+        let linkMp3 = 'https://dmnick.ovh/h/alert.mp3';
+        let linkMp3Awaria = 'https://dmnick.ovh/h/awaria.mp3';
+        let linkMp3Przypomnienie = 'https://dmnick.ovh/h/widziszmnie.mp3';
+        let HPAudioNiski = localStorage.getItem("HP-AudioNiski")??null;
+        let HPAudioWysoki = localStorage.getItem("HP-AudioWysoki")??null;
+        let HPAudioKrytyczny = localStorage.getItem("HP-AudioKrytyczny")??null;
+        let HPAudioBloker = localStorage.getItem("HP-AudioBloker")??null;
+        let HPAudioAwaria = localStorage.getItem("HP-AudioAwaria")??null;
+        switch(type){
+            case('Niski'):
+                if(HPAudioNiski && HPAudioNiski !== ''){
+                    linkMp3 = HPAudioNiski;
+                }
+                break;
+            case('Wysoki'):
+                if(HPAudioWysoki && HPAudioWysoki !== ''){
+                    linkMp3 = HPAudioWysoki;
+                }
+                break;
+            case('Krytyczny'):
+                if(HPAudioKrytyczny && HPAudioKrytyczny !== ''){
+                    linkMp3 = HPAudioKrytyczny;
+                }
+                break;
+            case('Bloker'):
+                if(HPAudioBloker && HPAudioBloker !== ''){
+                    linkMp3 = HPAudioBloker;
+                }
+                break;
+            case('awaria'):
+                if(HPAudioAwaria && HPAudioAwaria !== ''){
+                    linkMp3 = HPAudioAwaria;
+                }
+                else {
+                    linkMp3 = linkMp3Awaria;
+                }
+                break;
+            case('przypomnienie30min'):
+                linkMp3 = linkMp3Przypomnienie;
+                break;
+            default:
+                break;
+        }
+        try {
+            var audio = new Audio();
+            audio.src = linkMp3;
+
+            audio.onerror = function () {
+                alert("Niewspierany format: "
+                      + this.error.message);
+            }
+            audio.play();
+        }
+        catch(e) {
+            console.log("błąd przy odtwarzaniu: "+e);
+        }
+    }
+
     const delAlertOnLayout = (el) => {
         let stary = $("#"+el+"");
         stary.slideUp(1000, function(){this.remove()});
@@ -257,7 +316,11 @@
             let minuty = parseInt(Math.abs(Date.parse(new Date()) - staraData)/1000/60);
             if(minuty>15 && minuty <30){
                 el.closest(".card").style.backgroundColor = "orange";
-            } else if (minuty>30) {
+            } else if (minuty>30){
+                if(!el.closest(".card").classList.contains("warning")){
+                    console.log("przypomnienie");
+                    audioAlert('przypomnienie30min');
+                }
                 el.closest(".card").classList.add("warning");
             }
         });
@@ -266,58 +329,7 @@
     function display(x,type){
         if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://dmnick.ovh/h/icon.png');}
         if(hasAudio()===true){
-            let linkMp3 = 'https://dmnick.ovh/h/alert.mp3';
-            let linkMp3Awaria = 'https://dmnick.ovh/h/awaria.mp3';
-            let HPAudioNiski = localStorage.getItem("HP-AudioNiski")??null;
-            let HPAudioWysoki = localStorage.getItem("HP-AudioWysoki")??null;
-            let HPAudioKrytyczny = localStorage.getItem("HP-AudioKrytyczny")??null;
-            let HPAudioBloker = localStorage.getItem("HP-AudioBloker")??null;
-            let HPAudioAwaria = localStorage.getItem("HP-AudioAwaria")??null;
-            switch(type){
-             case('Niski'):
-                if(HPAudioNiski && HPAudioNiski !== ''){
-                 linkMp3 = HPAudioNiski;
-                }
-                break;
-             case('Wysoki'):
-                if(HPAudioWysoki && HPAudioWysoki !== ''){
-                 linkMp3 = HPAudioWysoki;
-                }
-                break;
-             case('Krytyczny'):
-                if(HPAudioKrytyczny && HPAudioKrytyczny !== ''){
-                 linkMp3 = HPAudioKrytyczny;
-                }
-                break;
-             case('Bloker'):
-                if(HPAudioBloker && HPAudioBloker !== ''){
-                 linkMp3 = HPAudioBloker;
-                }
-                break;
-             case('awaria'):
-                if(HPAudioAwaria && HPAudioAwaria !== ''){
-                 linkMp3 = HPAudioAwaria;
-                }
-                else {
-                 linkMp3 = linkMp3Awaria;
-                }
-                break;
-             default:
-                break;
-            }
-            try {
-                var audio = new Audio();
-                audio.src = linkMp3;
-
-                audio.onerror = function () {
-                    alert("Niewspierany format: "
-                          + this.error.message);
-                }
-                audio.play();
-            }
-            catch(e) {
-                console.log("błąd przy odtwarzaniu: "+e);
-            }
+            audioAlert(type);
 
             //new Audio("https://sndup.net/t54x/d").play();
         }
@@ -397,17 +409,26 @@
         <div><label for="HP-AudioWysoki">Wysoki priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioWysoki" /><button class="testMp3">Test</button></div>
         <div><label for="HP-AudioKrytyczny">Krytyczny priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioKrytyczny" /><button class="testMp3">Test</button></div>
         <div><label for="HP-AudioBloker">Bloker priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioBloker" /><button class="testMp3">Test</button></div>
-        <div><label for="HP-AudioAwaria">Awaria: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioAwaria" /><button class="testMp3">Test</button></div>`;
+        <div><label for="HP-AudioAwaria">Awaria: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioAwaria" /><button class="testMp3">Test</button></div>
+        <div><label for="HP-OpenLayout">Automatyczny layout: </label><input class="cbox" type="checkbox" id="HP-OpenLayout" /></div>
+        `;
 
 
         var save = document.createElement('button');
         save.innerHTML = "Zapisz";
         save.addEventListener("click",()=>{
             //layout.style.top = '';
-            document.querySelectorAll("#dzwieki > div > input").forEach(el => {
+            document.querySelectorAll("#dzwieki > div > input.audio").forEach(el => {
                 //console.log(el.id);
                 localStorage.setItem(el.id,el.value);
-                //console.log(localStorage.getItem(el.id));
+                //console.log(el.id+" => "+el.value+" "+el.checked);
+            });
+            document.querySelectorAll("#dzwieki > div > input.cbox").forEach(el => {
+                //console.log(el.id);
+                let test = el.checked;
+                if(test === false){test = ''}
+                localStorage.setItem(el.id,test);
+                //console.log(el.id+" => "+el.value+" "+el.checked);
             });
         });
         settings.prepend(save);
@@ -433,7 +454,7 @@
                     audio.src = audioMp3;
 
                     audio.onerror = function () {
-                        alert("Niewspierany format: "
+                        alert("Nie udało się odtworzyć: "
                               + this.error.message);
                     }
                     audio.play();
@@ -455,6 +476,7 @@
         document.querySelector("#HP-AudioKrytyczny").value = localStorage.getItem("HP-AudioKrytyczny")??'';
         document.querySelector("#HP-AudioBloker").value = localStorage.getItem("HP-AudioBloker")??'';
         document.querySelector("#HP-AudioAwaria").value = localStorage.getItem("HP-AudioAwaria")??'';
+        document.querySelector("#HP-OpenLayout").checked = localStorage.getItem("HP-OpenLayout")??'';
 
     }
 
