@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.88
+// @version      0.89
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -305,8 +305,19 @@
              default:
                 break;
             }
+            try {
+                var audio = new Audio();
+                audio.src = linkMp3;
 
-            new Audio(linkMp3).play();
+                audio.onerror = function () {
+                    alert("Niewspierany format: "
+                          + this.error.message);
+                }
+                audio.play();
+            }
+            catch(e) {
+                console.log("błąd przy odtwarzaniu: "+e);
+            }
 
             //new Audio("https://sndup.net/t54x/d").play();
         }
@@ -427,7 +438,20 @@
             el.addEventListener("click",() => {
                 let audioMp3 = el.parentElement.querySelector(".audio").value;
                 console.log("test audio "+audioMp3);
-                new Audio(audioMp3).play();
+                try {
+                    //new Audio(audioMp3).play();
+                    var audio = new Audio();
+                    audio.src = audioMp3;
+
+                    audio.onerror = function () {
+                        alert("Niewspierany format: "
+                              + this.error.message);
+                    }
+                    audio.play();
+                }
+                catch(e) {
+                    console.log("błąd przy odtwarzaniu: "+e);
+                }
             });
         });
     }
