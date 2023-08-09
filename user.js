@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.85
+// @version      0.88
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -86,8 +86,32 @@
      overflow-y: auto;
     }
 
+    #layoutSettings {
+     position: fixed;
+     top: 100%;
+     max-width: 500px;
+     margin: 10% auto;
+     padding: 20px;
+     left: 0;
+     right: 0;
+     min-height: 100px;
+     background-color: grey;
+     color: black;
+     z-index: 999;
+     overflow-y: auto;
+     border-radius: 5px;
+    }
+
+    #layoutSettings > button {
+     color:black;
+    }
+
     [ng-model='ticket.description'] > p > span {
      color: #c6d0dc!important;
+    }
+
+    #dzwieki > div > label {
+     width:200px;
     }
 
     @media screen and (max-width: 600px) {
@@ -242,12 +266,48 @@
     function display(x,type){
         if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://dmnick.ovh/h/icon.png');}
         if(hasAudio()===true){
-            if(type==="awaria"){
-                new Audio("https://dmnick.ovh/h/awaria.mp3").play();
+            let linkMp3 = 'https://dmnick.ovh/h/alert.mp3';
+            let linkMp3Awaria = 'https://dmnick.ovh/h/awaria.mp3';
+            let HPAudioNiski = localStorage.getItem("HP-AudioNiski")??null;
+            let HPAudioWysoki = localStorage.getItem("HP-AudioWysoki")??null;
+            let HPAudioKrytyczny = localStorage.getItem("HP-AudioKrytyczny")??null;
+            let HPAudioBloker = localStorage.getItem("HP-AudioBloker")??null;
+            let HPAudioAwaria = localStorage.getItem("HP-AudioAwaria")??null;
+            switch(type){
+             case('Niski'):
+                if(HPAudioNiski && HPAudioNiski !== ''){
+                 linkMp3 = HPAudioNiski;
+                }
+                break;
+             case('Wysoki'):
+                if(HPAudioWysoki && HPAudioWysoki !== ''){
+                 linkMp3 = HPAudioWysoki;
+                }
+                break;
+             case('Krytyczny'):
+                if(HPAudioKrytyczny && HPAudioKrytyczny !== ''){
+                 linkMp3 = HPAudioKrytyczny;
+                }
+                break;
+             case('Bloker'):
+                if(HPAudioBloker && HPAudioBloker !== ''){
+                 linkMp3 = HPAudioBloker;
+                }
+                break;
+             case('awaria'):
+                if(HPAudioAwaria && HPAudioAwaria !== ''){
+                 linkMp3 = HPAudioAwaria;
+                }
+                else {
+                 linkMp3 = linkMp3Awaria;
+                }
+                break;
+             default:
+                break;
             }
-            else {
-                new Audio("https://dmnick.ovh/h/alert.mp3").play();
-            }
+
+            new Audio(linkMp3).play();
+
             //new Audio("https://sndup.net/t54x/d").play();
         }
     }
@@ -310,6 +370,68 @@
         layout.classList.add("widoczne");
     }
 
+    function saveSettings(){
+    }
+
+    function createSettings(){
+        var settings = document.createElement("div");
+        settings.id = "layoutSettings";
+        settings.innerHMTL = "Ustawienia";
+        document.body.append(settings);
+
+        var dzwieki = document.createElement('div');
+        dzwieki.id = "dzwieki";
+        settings.prepend(dzwieki);
+        dzwieki.innerHTML = `<div><label for="HP-AudioNiski">Niski priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioNiski" /><button class="testMp3">Test</button></div>
+        <div><label for="HP-AudioWysoki">Wysoki priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioWysoki" /><button class="testMp3">Test</button></div>
+        <div><label for="HP-AudioKrytyczny">Krytyczny priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioKrytyczny" /><button class="testMp3">Test</button></div>
+        <div><label for="HP-AudioBloker">Bloker priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioBloker" /><button class="testMp3">Test</button></div>
+        <div><label for="HP-AudioAwaria">Awaria: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioAwaria" /><button class="testMp3">Test</button></div>`;
+
+
+        var save = document.createElement('button');
+        save.innerHTML = "Zapisz";
+        save.addEventListener("click",()=>{
+            //layout.style.top = '';
+            document.querySelectorAll("#dzwieki > div > input").forEach(el => {
+                //console.log(el.id);
+                localStorage.setItem(el.id,el.value);
+                //console.log(localStorage.getItem(el.id));
+            });
+        });
+        settings.prepend(save);
+
+        var remLayout = document.createElement('button');
+        remLayout.innerHTML = "Zamknij";
+        remLayout.addEventListener("click",()=>{
+            //layout.style.top = '';
+            settings.classList.remove("widoczne");
+            settings.classList.add("niewidoczne");
+        });
+        settings.prepend(remLayout);
+    }
+
+    function openSettings(){
+        var settings = document.querySelector("#layoutSettings");
+        //layout.style.top = "0";
+        settings.classList.remove("niewidoczne");
+        settings.classList.add("widoczne");
+        document.querySelector("#HP-AudioNiski").value = localStorage.getItem("HP-AudioNiski")??'';
+        document.querySelector("#HP-AudioWysoki").value = localStorage.getItem("HP-AudioWysoki")??'';
+        document.querySelector("#HP-AudioKrytyczny").value = localStorage.getItem("HP-AudioKrytyczny")??'';
+        document.querySelector("#HP-AudioBloker").value = localStorage.getItem("HP-AudioBloker")??'';
+        document.querySelector("#HP-AudioAwaria").value = localStorage.getItem("HP-AudioAwaria")??'';
+        var testMp3 = document.querySelectorAll(".testMp3");
+        testMp3.forEach((el,index) => {
+            //console.log(el.previousElementSibling.value);
+            el.addEventListener("click",() => {
+                let audioMp3 = el.parentElement.querySelector(".audio").value;
+                console.log("test audio "+audioMp3);
+                new Audio(audioMp3).play();
+            });
+        });
+    }
+
     function przelacznik(){
         var kotwica = document.querySelector("#page-heading > div");
         if(!document.querySelector("#kotwica") && kotwica){
@@ -364,6 +486,18 @@
             });
 
             kotwica.append(openLayoutButton);
+
+            //settings
+            var openSettingsButton = document.createElement('div');
+            openSettingsButton.innerHTML = [`
+            <a class="btn-icon" title="Otwórz ustawienia"><i class="icon-hdicon-HD_all_Settings f-16"></i></a>
+            `].join('');
+
+            openSettingsButton.addEventListener("click",()=>{
+                openSettings();
+            });
+
+            kotwica.append(openSettingsButton);
         }
     }
 
@@ -375,12 +509,13 @@
         let type = "normal";
         if(jsonResponse.items){
             jsonResponse.items.forEach((el)=>{
-                console.log(el.description);
+                //console.log(el);
                 if(el.assignee === null && el.status === "New" /* && sessionStorage.getItem(el.displayId)===null*/){
                     if(staryArray.includes(el.displayId)===false){
                         newAlertOnLayout(el);
                         x++;
                         console.log("dodano: "+el.displayId);
+                        type = el.priority.name;
                         if(el.subject.toLowerCase().includes('awaria')){type="awaria"}
                     }
                     nowyArray.push(el.displayId);
@@ -415,6 +550,7 @@
         $(document).ready(()=> {
             powiadomienie();
             createLayout();
+            createSettings();
             sessionStorage.clear("HP-aktywne");
             setInterval(refresh10s, 10000);
             if(localStorage.getItem("HP-OpenLayout")=='true'){
