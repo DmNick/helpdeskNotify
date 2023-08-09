@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.89
+// @version      0.90
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -420,18 +420,7 @@
             settings.classList.add("niewidoczne");
         });
         settings.prepend(remLayout);
-    }
 
-    function openSettings(){
-        var settings = document.querySelector("#layoutSettings");
-        //layout.style.top = "0";
-        settings.classList.remove("niewidoczne");
-        settings.classList.add("widoczne");
-        document.querySelector("#HP-AudioNiski").value = localStorage.getItem("HP-AudioNiski")??'';
-        document.querySelector("#HP-AudioWysoki").value = localStorage.getItem("HP-AudioWysoki")??'';
-        document.querySelector("#HP-AudioKrytyczny").value = localStorage.getItem("HP-AudioKrytyczny")??'';
-        document.querySelector("#HP-AudioBloker").value = localStorage.getItem("HP-AudioBloker")??'';
-        document.querySelector("#HP-AudioAwaria").value = localStorage.getItem("HP-AudioAwaria")??'';
         var testMp3 = document.querySelectorAll(".testMp3");
         testMp3.forEach((el,index) => {
             //console.log(el.previousElementSibling.value);
@@ -454,6 +443,19 @@
                 }
             });
         });
+    }
+
+    function openSettings(){
+        var settings = document.querySelector("#layoutSettings");
+        //layout.style.top = "0";
+        settings.classList.remove("niewidoczne");
+        settings.classList.add("widoczne");
+        document.querySelector("#HP-AudioNiski").value = localStorage.getItem("HP-AudioNiski")??'';
+        document.querySelector("#HP-AudioWysoki").value = localStorage.getItem("HP-AudioWysoki")??'';
+        document.querySelector("#HP-AudioKrytyczny").value = localStorage.getItem("HP-AudioKrytyczny")??'';
+        document.querySelector("#HP-AudioBloker").value = localStorage.getItem("HP-AudioBloker")??'';
+        document.querySelector("#HP-AudioAwaria").value = localStorage.getItem("HP-AudioAwaria")??'';
+
     }
 
     function przelacznik(){
