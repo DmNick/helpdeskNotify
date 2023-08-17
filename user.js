@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.95
+// @version      0.96
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -158,6 +158,26 @@
      -webkit-line-clamp: 1;
      line-clamp: 1;
      -webkit-box-orient: vertical;
+    }
+
+    #details-additional-fields input {
+     margin: 5px auto;
+     border-radius: 5px;
+     border:1px;
+     border-color: var(--primary-border-color);
+     padding:5px;
+     background-color:var(--input-background);
+     color:var(--secondary-font-color);
+    }
+
+    #details-additional-fields input::placeholder {
+     color:white;
+     opacity: 0.8;
+    }
+
+    #details-additional-fieldsinput:focus{
+     outline: none;
+     outline-style: none;
     }
 
     @page {
@@ -368,7 +388,7 @@
                     if (this.readyState == 4) {
                         if (this.status == 200){
                             //console.log(this.responseURL.split("/"));
-                            console.log(this);
+                            //console.log(this);
                             if(hasPrintLayout()){printLayout(this)};
                         }
                     }
@@ -385,7 +405,6 @@
     function printLayout(el){
         let resp = JSON.parse(el.response);
         let opis = document.querySelector("#details-additional-fields");
-        if(opis){console.log("wczytane")}else{console.log("nie wczytano");}
         var tid = setInterval(()=>{
             var elementExist = $('#details-additional-fields');
             if (elementExist.length == 1) {
@@ -395,47 +414,51 @@
 
         function functionToLoad(){
             clearInterval(tid);
-
-            console.log("TERA WCZYTANO");
-            console.log(document.querySelector("#details-additional-fields"));
-            console.log(resp);
-            console.log(JSON.parse(resp.customFields).fields);
+            //console.log(document.querySelector("#details-additional-fields"));
+            //console.log(resp);
+            //console.log(JSON.parse(resp.customFields).fields);
             let tab = [];
             document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
                 tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
             });
 
             if(!tab["Miejsce pracy:"] && !document.querySelector("#Miejsce\\ pracy\\:")){
-                let inputMP = document.createElement("input");
-                inputMP.id = "Miejsce pracy:";
-                inputMP.placeholder = "Miejsce pracy";
-                inputMP.addEventListener('keyup',(el)=>{
-                    console.log(el);
+                let div = document.createElement("div");
+                let input = document.createElement("input");
+                input.id = "Miejsce pracy:";
+                input.placeholder = "Miejsce pracy";
+                input.autocomplete = "off";
+                input.addEventListener('keyup',(el)=>{
                     document.querySelectorAll(".printOpisMP")[0].innerHTML = el.target.value;
                 });
-                document.querySelector("#details-additional-fields").append(inputMP);
+                document.querySelector("#details-additional-fields").append(div);
+                div.append(input);
             }
 
             if(!tab["Numer pomieszczenia:"] && !document.querySelector("#Numer\\ pomieszczenia\\:")){
-                let inputMP = document.createElement("input");
-                inputMP.id = "Numer pomieszczenia:";
-                inputMP.placeholder = "Numer pomieszczenia";
-                inputMP.addEventListener('keyup',(el)=>{
-                    console.log(el);
+                let div = document.createElement("div");
+                let input = document.createElement("input");
+                input.id = "Numer pomieszczenia:";
+                input.autocomplete = "off";
+                input.placeholder = "Numer pomieszczenia";
+                input.addEventListener('keyup',(el)=>{
                     document.querySelectorAll(".printOpisNP")[0].innerHTML = el.target.value;
                 });
-                document.querySelector("#details-additional-fields").append(inputMP);
+                document.querySelector("#details-additional-fields").append(div);
+                div.append(input);
             }
 
             if(!tab["Numer kontaktowy:"] && !document.querySelector("#Numer\\ kontaktowy\\:")){
-                let inputMP = document.createElement("input");
-                inputMP.id = "Numer kontaktowy:";
-                inputMP.placeholder = "Numer kontaktowy";
-                inputMP.addEventListener('keyup',(el)=>{
-                    console.log(el);
+                let div = document.createElement("div");
+                let input = document.createElement("input");
+                input.id = "Numer kontaktowy:";
+                input.autocomplete = "off";
+                input.placeholder = "Numer kontaktowy";
+                input.addEventListener('keyup',(el)=>{
                     document.querySelectorAll(".printOpisNK")[0].innerHTML = el.target.value;
                 });
-                document.querySelector("#details-additional-fields").append(inputMP);
+                document.querySelector("#details-additional-fields").append(div);
+                div.append(input);
             }
 
             if(document.querySelector("#naklejka")){
@@ -459,6 +482,8 @@
             }
             let naklejka = document.querySelector("#naklejka");
             let printButton = document.querySelector("#printButton");
+            printButton.classList = "btn btn-default";
+            printButton.style.color = "var(--primary-button-background)";
             naklejka.innerHTML = `
             <div class="printNazwa">#${resp.displayId} ${resp.subject}</div>
             <div class="printOpis"><span class="printOpisMP">${tab["Miejsce pracy:"]??''}</span> <span class="printOpisNP">${tab["Numer pomieszczenia:"]??''}</span></div>
@@ -466,7 +491,7 @@
             `;
 
             printButton.addEventListener('click',(el)=>{
-                console.log(el.target);
+                //console.log(el.target);
                 /*Print(naklejka, {
                     onStart: function() {
                         //console.log('onStart', new Date())
