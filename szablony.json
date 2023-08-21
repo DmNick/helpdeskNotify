@@ -1,26 +1,28 @@
 {
-  "0": {
-    "nazwa": "POTWIERDZENIE",
-    "value": "Cześć, w celu uzyskania pomocy w tym zakresie, niezbędne jest uzyskanie autoryzacji przełożonego. Najprostszym sposobem jest dodanie go do rubryki \"Obserwatorzy\" w panelu po prawej stronie zgłoszenia i poproszenie go o potwierdzenie."
-  },
-  "1": {
-    "nazwa": "ZDALNE",
-    "value": "Dodatkowo proszę o wskazanie do kiedy dostęp ma być przyznany (data lub bezterminowo). Potrzeba jest również informacja z jakiego komputera będzie użytkownik będzie korzystał (prywatny lub służbowy)"
-  },
-  "2": {
-    "nazwa": "IMPULS HASŁO",
-    "value": "Cześć, hasło można zresetować samodzielnie (wraz z odblokowaniem konta) przez portal do wniosków urlopowych. https://portal.ekookna.net.pl/Portal/Account/LogOn Pod przyciskiem \"zaloguj się\" jest \"odzyskaj hasło\". Wpisujesz maila i przyjdzie link z dalszymi instrukcjami. Daj znać czy się udało."
-  },
-  "3": {
-    "nazwa": "NAGRANIA Z KAMER",
-    "value": "Cześć, dział IT nie zajmuje się zabezpieczaniem nagrań. Należy zgłosić taką potrzebę do jednej z tych osób: ochrona24, Dariusz Książek, Henryk Szczygieł. Zgłoszenie zamykam."
-  },
-  "4": {
-    "nazwa": "EKOSYSTEM UPRAWNIENIA",
-    "value": "Dodatkowo proszę o podanie konkretnych linków do zakładek ekosystemu lub imię i nazwisko osoby z której uprawnienia można by było skopiować i dopisać osobie wyżej wymienionej"
-  },
-  "5": {
-    "nazwa": "INFO ZWROTNE",
-    "value": "Gotowe, przeloguj się i sprawdź czy działa, daj mi proszę znać."
+    "szablony": [
+      {
+        "nazwa": "POTWIERDZENIE",
+        "value": "Cześć, w celu uzyskania pomocy w tym zakresie, niezbędne jest uzyskanie autoryzacji przełożonego. Najprostszym sposobem jest dodanie go do rubryki \"Obserwatorzy\" w panelu po prawej stronie zgłoszenia i poproszenie go o potwierdzenie."
+      },
+      {
+        "nazwa": "ZDALNE",
+        "value": "Dodatkowo proszę o wskazanie do kiedy dostęp ma być przyznany (data lub bezterminowo). Potrzeba jest również informacja z jakiego komputera będzie użytkownik będzie korzystał (prywatny lub służbowy)"
+      },
+      {
+        "nazwa": "IMPULS HASŁO",
+        "value": "Cześć, hasło można zresetować samodzielnie (wraz z odblokowaniem konta) przez portal do wniosków urlopowych. https://portal.ekookna.net.pl/Portal/Account/LogOn Pod przyciskiem \"zaloguj się\" jest \"odzyskaj hasło\". Wpisujesz maila i przyjdzie link z dalszymi instrukcjami. Daj znać czy się udało."
+      },
+      {
+        "nazwa": "NAGRANIA Z KAMER",
+        "value": "Cześć, dział IT nie zajmuje się zabezpieczaniem nagrań. Należy zgłosić taką potrzebę do jednej z tych osób: ochrona24, Dariusz Książek, Henryk Szczygieł. Zgłoszenie zamykam."
+      },
+      {
+        "nazwa": "EKOSYSTEM UPRAWNIENIA",
+        "value": "Dodatkowo proszę o podanie konkretnych linków do zakładek ekosystemu lub imię i nazwisko osoby z której uprawnienia można by było skopiować i dopisać osobie wyżej wymienionej"
+      },
+      {
+        "nazwa": "INFO ZWROTNE",
+        "value": "Gotowe, przeloguj się i sprawdź czy działa, daj mi proszę znać."
+      }
+    ]
   }
-}
