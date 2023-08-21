@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.96
+// @version      0.97
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -9,8 +9,8 @@
 // @match        https://helpdesk/
 // @require  	 https://code.jquery.com/jquery-3.7.0.min.js
 // @require      https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/notifications.js
-// @require      https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/Print.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/printThis/1.15.0/printThis.js
+// @require      https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAiJJREFUOE+Vk11Ik2EUx//Pq9t4xbWl9MaimhuIXWREVwXShTg/sPAmGrMmU1sXejEoyA0aJoqWedtNYYmzxL5wlOUHSRdB3teFCG4xa1rhaJhaNnfC593z1sUu5nNzzv9/zvmdhwceRkQM/awKCkagQEG2U5AxdZmYysRtgNEA6mDFKzp2GXT4FqDfk5WRzZSm8sDoOVbTpR1F6SM9OQ+KxvywDowmQFunv+9qswDo3xjA6Alos35j19t3BuS3BSrgZ+0aB+Q9qsN242sNJnSVy4+95kKcKC9FoM2p1QunjSog6fjBTf3QKWx53msNQjsuBDDzsA/XegdRbDaio+087zGNm8HoPijRsMoNOVSBTfc7DSB0rfs6JkPqI1e6/JgdvcnzovFiMLoN+tb0lRvG0EmQwaQB2O8k1txzqPd0YmKoi/vO9j6M3QnwXHm5H4z6QcsX4+qVxiqRdM5qAKHPtnbhxWAn92uagpga7ua5ZeSACvjsWlKv9NSBxLkZDSB0g7cb4XtB+G7cxdEyK7yuGt5zcPQQ2K8gaKX1kwqYbkai+sE/QEY3+gbAGEN1xXEErzQjFovxHuvjErB1P2jFu8gNm83GYzQahcVigSzLiEQisNvt3CciXts5UmoDJeFyFfClZUHbmmtiXhzGvg89cQ5Y8sznOgcptQ5T7BmUj70AwxmW9IGkfHVeEt/1P1z6D6AT3xmAwciLcUi4hKs0+RdlXsVylWyVrQAAAABJRU5ErkJggg==
 // @grant        none
 // ==/UserScript==
@@ -24,6 +24,11 @@
     styleElem.innerHTML = `
     #toast-container {
      z-index: 999!important;
+    }
+
+    @font-face {
+     font-family: diabloFont;
+     src: url('https://dmnick.ovh/h/DiabloHeavy.ttf');
     }
 
     .row {margin: 0px;}
@@ -112,7 +117,12 @@
      color: #c6d0dc!important;
     }
 
-    [ng-model='ticket.description'] span {
+    [ng-model='ticket.description'],
+    [ng-model='ticket.description'] span,
+    [ng-model='ticket.description'] div,
+    [ng-model='ticket.description'] tr,
+    [ng-model='ticket.description'] td,
+    [ng-model='ticket.description'] * {
      color: #c6d0dc!important;
     }
 
@@ -121,7 +131,15 @@
     }
 
     .ticket-description {
-     max-height:500px;
+     max-height:400px;
+    }
+
+    #footer {
+     display:none;
+    }
+
+    .container {
+     margin-bottom: 0;
     }
 
     #naklejka {
@@ -129,6 +147,7 @@
         width: 150mm;
         height: 35mm;
         font-size: 18px;
+        /*font-family: diabloFont;*/
         flex-wrap: wrap;
         align-content: flex-end;
         align-items: flex-end;
@@ -160,8 +179,8 @@
      -webkit-box-orient: vertical;
     }
 
-    #details-additional-fields input {
-     margin: 5px auto;
+    #details-additional-fields input, .form-select {
+     margin: 5px 5px;
      border-radius: 5px;
      border:1px;
      border-color: var(--primary-border-color);
@@ -178,6 +197,18 @@
     #details-additional-fieldsinput:focus{
      outline: none;
      outline-style: none;
+    }
+
+    .select2 {
+     width:250px;
+     margin: 0 10px;
+    }
+
+    .foo {
+     font-size:small;
+     color:grey;
+     max-height:30px;
+     overflow-y:hidden;
     }
 
     @page {
@@ -266,6 +297,19 @@
         let text = document.createElement("div");
         text.innerHTML = x;
         return text.innerText;
+    }
+
+    const ifLoaded = async (div) => {
+        var tid = await setInterval(()=>{
+            if (div.length == 1) {
+                functionToLoad();
+            }
+        }, 500);
+
+        function functionToLoad(){
+            clearInterval(tid);
+            return true;
+        }
     }
 
     function audioAlert(type){
@@ -371,11 +415,74 @@
         //console.log(bezParagrafu(xjson.description));
     }
 
+    function dodajIZakoncz(){
+    }
+
+    function wczytajSzablony(){
+        //$(document.body).append($('<div/>', { id: 'licznikSzablony', html: '0'}));
+        ifLoaded($('#details-additional-fields')).then(()=>{
+            if(!document.querySelector("#selectSzablony")){
+                let commentBar = document.querySelector("#wrap .upload-files div.actions");
+                let selectSzablony = document.createElement("span");
+                commentBar.prepend(selectSzablony);
+                selectSzablony.id = "selectSzablony";
+                selectSzablony.innerHTML = [
+                    `<select class="form-select form-select-sm select2" aria-label=".form-select-sm example">`,
+                    `<option></option>`,
+                    `<option value="0" title="Czyści zawartość pola" data-bs-toggle="tooltip" data-bs-html="true" title="<em>Tooltip</em> <u>with</u> <b>HTML</b>">Wyczyść</option>`,
+                    `</select>`
+                ].join(',');
+                //console.log(document.querySelectorAll("#selectSzablony select option"));
+
+                $.getJSON('https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json',(e)=>{
+                    //console.log(e.szablony);
+                    e.szablony.forEach((el,index) => {
+                        //console.log(el);
+                        $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value}).appendTo( ".form-select" );
+                    });
+                });
+
+                function formatCustom(state) {
+                    return $(
+                        '<div><div>' + state.text + '</div><div class="foo">'
+                        + $(state.element).attr('title')
+                        + '</div></div>'
+                    );
+                }
+
+                $("#selectSzablony select").on("change",(el,index) => {
+                    var e = el.target;
+                    var wybor = e.options[e.selectedIndex].text;
+                    let cb = $("[ng-model='comment.isInternal']")[0];
+                    let tekst = $("div[ta-bind='ta-bind']").html();
+                    if(tekst == '<p><br></p>'){tekst=''}
+                    switch(wybor){
+                        case('Wyczyść'):
+                            $("div[ta-bind='ta-bind']").html('<p><br></p>');
+                            break;
+                        default:
+                            if(cb.classList.contains('ng-not-empty')){cb.click()}
+                            $("div[ta-bind='ta-bind']").html(tekst+"<p>"+e.options[e.selectedIndex].title+"</p>");
+                            break;
+                    }
+                    $("#selectSzablony select")[0].selectedIndex = 0;
+                });
+                $(document).ready(function() {
+                    $('.form-select').select2({
+                        placeholder: 'Szablony',
+                        //allowClear: true
+                        templateResult: formatCustom
+                    });
+                });
+            }
+        });
+    }
+
     function powiadomienie() {
         var origOpen = XMLHttpRequest.prototype.open;
         XMLHttpRequest.prototype.open = function(method, url) {
             this.addEventListener('load', function() {
-                if(url.indexOf("tickets?") > -1){
+                if(url.indexOf("tickets?") > -1 && window.location.href.split('?')[0] == 'https://helpdesk/#/helpdesk'){
                     if (this.readyState == 4) {
                         if (this.status == 200){
                             check(this);
@@ -384,12 +491,13 @@
                         }
                     };
                 }
-                if(url.indexOf("tickets/") > -1 && this.responseURL.split("/").length == '6'){
+                if(url.indexOf("tickets/") > -1 && this.responseURL.split("/").length == '6' && window.location.href.indexOf('helpdesk/details/') > -1){
                     if (this.readyState == 4) {
                         if (this.status == 200){
                             //console.log(this.responseURL.split("/"));
                             //console.log(this);
                             if(hasPrintLayout()){printLayout(this)};
+                            wczytajSzablony();
                         }
                     }
                 }
@@ -421,13 +529,15 @@
             document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
                 tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
             });
-
+            //console.log(tab);
+            if(tab["Lokalizacja:"]){tab["Miejsce pracy:"] = tab["Lokalizacja:"]}
+            if(tab["Nr kontaktowy:"]){tab["Numer kontaktowy:"] = tab["Nr kontaktowy:"]}
             if(!tab["Miejsce pracy:"] && !document.querySelector("#Miejsce\\ pracy\\:")){
                 let div = document.createElement("div");
                 let input = document.createElement("input");
                 input.id = "Miejsce pracy:";
-                input.placeholder = "Miejsce pracy";
                 input.autocomplete = "off";
+                input.placeholder = "Miejsce pracy";
                 input.addEventListener('keyup',(el)=>{
                     document.querySelectorAll(".printOpisMP")[0].innerHTML = el.target.value;
                 });
@@ -442,7 +552,7 @@
                 input.autocomplete = "off";
                 input.placeholder = "Numer pomieszczenia";
                 input.addEventListener('keyup',(el)=>{
-                    document.querySelectorAll(".printOpisNP")[0].innerHTML = el.target.value;
+                    document.querySelectorAll(".printOpisNP")[0].innerHTML = " | "+el.target.value;
                 });
                 document.querySelector("#details-additional-fields").append(div);
                 div.append(input);
@@ -455,7 +565,7 @@
                 input.autocomplete = "off";
                 input.placeholder = "Numer kontaktowy";
                 input.addEventListener('keyup',(el)=>{
-                    document.querySelectorAll(".printOpisNK")[0].innerHTML = el.target.value;
+                    document.querySelectorAll(".printOpisNK")[0].innerHTML = " | "+el.target.value;
                 });
                 document.querySelector("#details-additional-fields").append(div);
                 div.append(input);
@@ -479,18 +589,8 @@
                 printButton.innerHTML = "Drukuj";
                 document.querySelector("#details-additional-fields").append(document.createElement("br"));
                 document.querySelector("#details-additional-fields").append(printButton);
-            }
-            let naklejka = document.querySelector("#naklejka");
-            let printButton = document.querySelector("#printButton");
-            printButton.classList = "btn btn-default";
-            printButton.style.color = "var(--primary-button-background)";
-            naklejka.innerHTML = `
-            <div class="printNazwa">#${resp.displayId} ${resp.subject}</div>
-            <div class="printOpis"><span class="printOpisMP">${tab["Miejsce pracy:"]??''}</span> <span class="printOpisNP">${tab["Numer pomieszczenia:"]??''}</span></div>
-            <div class="printPodpis">${resp.creatorUser.fullName} <span class="printOpisNK">${tab["Numer kontaktowy:"]??''}<span></div>
-            `;
 
-            printButton.addEventListener('click',(el)=>{
+                printButton.addEventListener('click',(el)=>{
                 //console.log(el.target);
                 /*Print(naklejka, {
                     onStart: function() {
@@ -501,11 +601,23 @@
                     }
                 })*/
                 //printJS('naklejka', 'html');
-                $("#naklejka").printThis({
+                $(naklejka).printThis({
                     importCSS: true,
                     importStyle: true
                 });
             });
+            }
+            let naklejka = document.querySelector("#naklejka");
+            let printButton = document.querySelector("#printButton");
+            printButton.classList = "btn btn-default";
+            printButton.style.color = "var(--primary-button-background)";
+            naklejka.innerHTML = `
+            <div class="printNazwa">#${resp.displayId} ${resp.subject}</div>
+            <div class="printOpis"><span class="printOpisMP">${tab["Miejsce pracy:"]??''}</span> <span class="printOpisNP">${tab["Numer pomieszczenia:"]??''}</span> <span class="printOpisNK">${tab["Numer kontaktowy:"]??''}<span></div>
+            <div class="printPodpis">${resp.requester.fullName}</div>
+            `;
+            //$('#printButton').replaceWith($('#printButton').clone());
+
         }
     }
 
