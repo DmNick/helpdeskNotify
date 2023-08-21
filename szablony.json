@@ -23,6 +23,10 @@
         {
             "nazwa": "EKOSYSTEM UPRAWNIENIA",
             "value": "Dodatkowo proszę o podanie konkretnych linków do zakładek ekosystemu lub imię i nazwisko osoby z której uprawnienia można by było skopiować i dopisać osobie wyżej wymienionej"
+        },
+        {
+            "nazwa": "ZAMYKANIE ZGŁOSZENIA",
+            "value": "Z powodu braku odpowiedzi zgłoszenie uznaje za zamknięte."
         }
     ]
 }
