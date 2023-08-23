@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98
+// @version      0.98.1
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -117,12 +117,7 @@
      color: #c6d0dc!important;
     }
 
-    [ng-model='ticket.description'],
-    [ng-model='ticket.description'] span,
-    [ng-model='ticket.description'] div,
-    [ng-model='ticket.description'] tr,
-    [ng-model='ticket.description'] td,
-    [ng-model='ticket.description'] * {
+    .theme-dark [ng-model='ticket.description'] * {
      color: #c6d0dc!important;
     }
 
@@ -469,7 +464,7 @@
             url: "https://dmnick.ovh/h/"+e,
             responseType: "blob",
             onload: function(resp) {
-                console.log(resp);
+                //console.log(resp);
                 const arr = resp.responseHeaders.trim().split(/[\r\n]+/);
                 const headerMap = {};
                 arr.forEach((line) => {
@@ -478,7 +473,7 @@
                     const value = parts.join(": ");
                     headerMap[header] = value;
                 });
-                console.log(headerMap);
+                //console.log(headerMap);
                 const nazwaArr = resp.finalUrl.trim().split("/");
                 let fileName = nazwaArr[nazwaArr.length-1].toLowerCase();
                 //let fileName = 'przekierowanie.gif'
@@ -486,7 +481,7 @@
                 let container = new DataTransfer();
                 container.items.add(file);
                 document.querySelector("input[ngf-select='upload($files)']").files = container.files;
-                console.log(container.files);
+                //console.log(container.files);
                 var event = new Event('change');
                 document.querySelector("input[ngf-select='upload($files)']").dispatchEvent(event);
             }
@@ -518,11 +513,19 @@
                 });
 
                 function formatCustom(state) {
-                    return $(
-                        '<div><div>' + state.text + '</div><div class="foo">'
-                        + $(state.element).attr('title')
-                        + '</div></div>'
-                    );
+                    if($(state.element).attr('data-gif') && $(state.element).attr('data-gif') !== ''){
+                        return $(
+                            '<div><div>' + state.text + ' <span class="badge bg-primary rounded-pill">GIF</span></div><div class="foo">'
+                            + $(state.element).attr('title')
+                            + '</div></div>'
+                        );
+                    } else {
+                        return $(
+                            '<div><div>' + state.text + '</div><div class="foo">'
+                            + $(state.element).attr('title')
+                            + '</div></div>'
+                        );
+                    }
                 }
 
                 $("#selectSzablony select").on("change",(el,index) => {
@@ -535,6 +538,7 @@
                     switch(wybor){
                         case('Wyczyść'):
                             $("div[ta-bind='ta-bind']").html('<p><br></p>');
+                            $("[ng-click='removeFile(f)']").click();
                             document.querySelector("div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
                             break;
                         default:
@@ -542,7 +546,7 @@
                             $("div[ta-bind='ta-bind']").html(tekst+"<p>"+e.options[e.selectedIndex].title+"</p>");
                             document.querySelector("div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
                             if(dataGif && dataGif !== '' && dataGif !== null){
-                                console.log(dataGif);
+                                //console.log(dataGif);
                                 insertZalacznik(dataGif);
                             };
                             break;
@@ -580,7 +584,7 @@
                             //console.log(this);
                             if(hasPrintLayout()){printLayout(this)};
                             wczytajSzablony();
-                            dodajIZakoncz();
+                            //dodajIZakoncz();
                             if(hasWylaczWewnetrzneOdp()){WylaczWewnetrzneOdp()};
                         }
                     }
