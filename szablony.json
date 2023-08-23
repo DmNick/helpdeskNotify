@@ -5,8 +5,9 @@
             "value": "Gotowe, przeloguj się i sprawdź czy działa, daj mi proszę znać."
         },
         {
-            "nazwa": "POTWIERDZENIE",
-            "value": "Cześć, w celu uzyskania pomocy w tym zakresie, niezbędne jest uzyskanie autoryzacji przełożonego. Najprostszym sposobem jest dodanie go do rubryki \"Obserwatorzy\" w panelu po prawej stronie zgłoszenia i poproszenie go o potwierdzenie."
+            "nazwa": "POTWIERDZENIE PRZEŁOŻONEGO",
+            "value": "Cześć, w celu uzyskania pomocy w tym zakresie, niezbędne jest uzyskanie autoryzacji przełożonego. Najprostszym sposobem jest dodanie go do rubryki \"Obserwatorzy\" w panelu po prawej stronie zgłoszenia i poproszenie go o potwierdzenie.",
+            "gif": "Dodanie_Obserwatora_Helpdesk.gif"
         },
         {
             "nazwa": "ZDALNE",
@@ -15,6 +16,14 @@
         {
             "nazwa": "IMPULS HASŁO",
             "value": "Cześć, hasło można zresetować samodzielnie (wraz z odblokowaniem konta) przez portal do wniosków urlopowych. https://portal.ekookna.net.pl/Portal/Account/LogOn Pod przyciskiem \"zaloguj się\" jest \"odzyskaj hasło\". Wpisujesz maila i przyjdzie link z dalszymi instrukcjami. Daj znać czy się udało."
+        },
+        {
+            "nazwa": "WYGASŁO HASŁO",
+            "value": "Hej dzisiaj upływa Ci ważność hasła, aby rozwiązać ten problem wystarczy je zmienić. Wciśnij CTRL+ALT+DEL na klawiaturze i wybierz opcje \"zmień hasło\". Jak już się uda, włącz na nowo Winpro. Proszę o informację czy problem został rozwiązany."
+        },
+        {
+            "nazwa": "PORTAL PRACOWNICZY",
+            "value": "Hej, dostęp został zresetowany. Proszę zalogować się tak samo jak za pierwszym razem. Proszę o informację czy problem został rozwiązany."
         },
         {
             "nazwa": "NAGRANIA Z KAMER",
