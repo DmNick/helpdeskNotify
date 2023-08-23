@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.97
+// @version      0.98
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -12,7 +12,7 @@
 // @require      https://cdnjs.cloudflare.com/ajax/libs/printThis/1.15.0/printThis.js
 // @require      https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAiJJREFUOE+Vk11Ik2EUx//Pq9t4xbWl9MaimhuIXWREVwXShTg/sPAmGrMmU1sXejEoyA0aJoqWedtNYYmzxL5wlOUHSRdB3teFCG4xa1rhaJhaNnfC593z1sUu5nNzzv9/zvmdhwceRkQM/awKCkagQEG2U5AxdZmYysRtgNEA6mDFKzp2GXT4FqDfk5WRzZSm8sDoOVbTpR1F6SM9OQ+KxvywDowmQFunv+9qswDo3xjA6Alos35j19t3BuS3BSrgZ+0aB+Q9qsN242sNJnSVy4+95kKcKC9FoM2p1QunjSog6fjBTf3QKWx53msNQjsuBDDzsA/XegdRbDaio+087zGNm8HoPijRsMoNOVSBTfc7DSB0rfs6JkPqI1e6/JgdvcnzovFiMLoN+tb0lRvG0EmQwaQB2O8k1txzqPd0YmKoi/vO9j6M3QnwXHm5H4z6QcsX4+qVxiqRdM5qAKHPtnbhxWAn92uagpga7ua5ZeSACvjsWlKv9NSBxLkZDSB0g7cb4XtB+G7cxdEyK7yuGt5zcPQQ2K8gaKX1kwqYbkai+sE/QEY3+gbAGEN1xXEErzQjFovxHuvjErB1P2jFu8gNm83GYzQahcVigSzLiEQisNvt3CciXts5UmoDJeFyFfClZUHbmmtiXhzGvg89cQ5Y8sznOgcptQ5T7BmUj70AwxmW9IGkfHVeEt/1P1z6D6AT3xmAwciLcUi4hKs0+RdlXsVylWyVrQAAAABJRU5ErkJggg==
-// @grant        none
+// @grant        GM_xmlhttpRequest
 // ==/UserScript==
 /* global $ */
 
@@ -300,15 +300,28 @@
     }
 
     const ifLoaded = async (div) => {
+        var x = 0;
         var tid = await setInterval(()=>{
-            if (div.length == 1) {
+            //console.log("wczytywanie1");
+            if ($(div).length == 1) {
                 functionToLoad();
             }
+            if (x > 40){
+                returnFalse();
+                console.log("Przekroczono limit czasu: "+ div);
+            }
+            x++;
         }, 500);
 
         function functionToLoad(){
             clearInterval(tid);
+            //console.log("wczytano1");
             return true;
+        }
+
+        function returnFalse(){
+            clearInterval(tid);
+            return false;
         }
     }
 
@@ -416,11 +429,73 @@
     }
 
     function dodajIZakoncz(){
+        let panel = $(".upload-files > .actions");
+        ifLoaded("[ng-click='addComment()']").then(() => {
+            if(!document.querySelector(".dodajIZakoncz")){
+                let button = document.createElement("button");
+                button.classList = 'btn btn-info dodajIZakoncz';
+                button.innerHTML = "<span ng-transclude=''>Dodaj i zakończ</span>";
+                button.style.padding = "8px 20px";
+                button.style.fontSize = "13px";
+                button.style.fontWeight = "600";
+                panel.prepend(button);
+                //button.preventDefault();
+                button.addEventListener('click',(el) => {
+                    el.preventDefault()
+                    console.log("click");
+                    let wew = document.querySelector("[ng-model='comment.isInternal']").checked;
+                    let txt = $("div[ta-bind='ta-bind']").html();
+                    if(txt == '<p><br></p>'){txt = ''}
+
+
+                });
+            }
+        });
+
+    }
+
+    function WylaczWewnetrzneOdp(){
+        ifLoaded("[ng-model='comment.isInternal']").then(()=>{
+            //console.log("wczytano slider");
+            if(document.querySelector("[ng-model='comment.isInternal']").checked == true){
+                document.querySelector("[ng-model='comment.isInternal']").click();
+            };
+        });
+    }
+
+    function insertZalacznik(e){
+        GM.xmlHttpRequest({
+            method: "GET",
+            url: "https://dmnick.ovh/h/"+e,
+            responseType: "blob",
+            onload: function(resp) {
+                console.log(resp);
+                const arr = resp.responseHeaders.trim().split(/[\r\n]+/);
+                const headerMap = {};
+                arr.forEach((line) => {
+                    const parts = line.split(": ");
+                    const header = parts.shift();
+                    const value = parts.join(": ");
+                    headerMap[header] = value;
+                });
+                console.log(headerMap);
+                const nazwaArr = resp.finalUrl.trim().split("/");
+                let fileName = nazwaArr[nazwaArr.length-1].toLowerCase();
+                //let fileName = 'przekierowanie.gif'
+                let file = new File([resp.response], fileName,{type:headerMap['content-type'], lastModified:new Date().getTime()}, 'utf-8');
+                let container = new DataTransfer();
+                container.items.add(file);
+                document.querySelector("input[ngf-select='upload($files)']").files = container.files;
+                console.log(container.files);
+                var event = new Event('change');
+                document.querySelector("input[ngf-select='upload($files)']").dispatchEvent(event);
+            }
+        });
     }
 
     function wczytajSzablony(){
         //$(document.body).append($('<div/>', { id: 'licznikSzablony', html: '0'}));
-        ifLoaded($('#details-additional-fields')).then(()=>{
+        ifLoaded("#details-additional-fields").then(()=>{
             if(!document.querySelector("#selectSzablony")){
                 let commentBar = document.querySelector("#wrap .upload-files div.actions");
                 let selectSzablony = document.createElement("span");
@@ -438,7 +513,7 @@
                     //console.log(e.szablony);
                     e.szablony.forEach((el,index) => {
                         //console.log(el);
-                        $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value}).appendTo( ".form-select" );
+                        $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value, attr: {"data-gif":el.gif??""}}).appendTo( ".form-select" );
                     });
                 });
 
@@ -455,14 +530,21 @@
                     var wybor = e.options[e.selectedIndex].text;
                     let cb = $("[ng-model='comment.isInternal']")[0];
                     let tekst = $("div[ta-bind='ta-bind']").html();
+                    let dataGif = e.options[e.selectedIndex].getAttribute('data-gif');
                     if(tekst == '<p><br></p>'){tekst=''}
                     switch(wybor){
                         case('Wyczyść'):
                             $("div[ta-bind='ta-bind']").html('<p><br></p>');
+                            document.querySelector("div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
                             break;
                         default:
-                            if(cb.classList.contains('ng-not-empty')){cb.click()}
+                            if(cb.checked == true){cb.click()}
                             $("div[ta-bind='ta-bind']").html(tekst+"<p>"+e.options[e.selectedIndex].title+"</p>");
+                            document.querySelector("div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
+                            if(dataGif && dataGif !== '' && dataGif !== null){
+                                console.log(dataGif);
+                                insertZalacznik(dataGif);
+                            };
                             break;
                     }
                     $("#selectSzablony select")[0].selectedIndex = 0;
@@ -498,6 +580,8 @@
                             //console.log(this);
                             if(hasPrintLayout()){printLayout(this)};
                             wczytajSzablony();
+                            dodajIZakoncz();
+                            if(hasWylaczWewnetrzneOdp()){WylaczWewnetrzneOdp()};
                         }
                     }
                 }
@@ -514,6 +598,7 @@
         let resp = JSON.parse(el.response);
         let opis = document.querySelector("#details-additional-fields");
         var tid = setInterval(()=>{
+            //console.log("wczytywanie");
             var elementExist = $('#details-additional-fields');
             if (elementExist.length == 1) {
                 functionToLoad();
@@ -522,6 +607,7 @@
 
         function functionToLoad(){
             clearInterval(tid);
+            //console.log("wczytano");
             //console.log(document.querySelector("#details-additional-fields"));
             //console.log(resp);
             //console.log(JSON.parse(resp.customFields).fields);
@@ -678,6 +764,15 @@
             }
     }
 
+    function hasWylaczWewnetrzneOdp() {
+            if (localStorage.getItem("HP-WylaczWewnetrzneOdp") == 'true'){
+                return(true);
+            }
+            else {
+                return(false);
+            }
+    }
+
     function refresh10s(){
         if(document.querySelector("#layoutNotify.widoczne")){
             refreshList();
@@ -737,6 +832,7 @@
         <div><label for="HP-AudioAwaria">Awaria: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioAwaria" /><button class="testMp3">Test</button></div>
         <div><label for="HP-OpenLayout">Auto uruchom layout: </label><input class="cbox" type="checkbox" id="HP-OpenLayout" /></div>
         <div><label for="HP-PrintLayout">Drukowanie etykietek: </label><input class="cbox" type="checkbox" id="HP-PrintLayout" /></div>
+        <div><label for="HP-WylaczWewnetrzneOdp">Wyłącz zawsze wewnętrzne: </label><input class="cbox" type="checkbox" id="HP-WylaczWewnetrzneOdp" /></div>
         `;
 
 
@@ -941,6 +1037,7 @@
             if(localStorage.getItem("HP-OpenLayout")=='true'){
                 openLayout();
             }
+
         });
     })();
 
