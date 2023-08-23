@@ -25,6 +25,11 @@
             "value": "Dodatkowo proszę o podanie konkretnych linków do zakładek ekosystemu lub imię i nazwisko osoby z której uprawnienia można by było skopiować i dopisać osobie wyżej wymienionej"
         },
         {
+            "nazwa": "PRZEKIEROWANIE MAILA",
+            "value": "Cześć, przekierowanie maila możemy ustawić własnoręcznie, w załączniku przesyłam instrukcję.",
+            "gif": "Jak_ustawic_delegacje_konta_email.gif"
+        },
+        {
             "nazwa": "ZAMYKANIE ZGŁOSZENIA",
             "value": "Z powodu braku odpowiedzi zgłoszenie uznaje za zamknięte."
         }
