@@ -2,11 +2,11 @@
     "szablony": [
         {
             "nazwa": "INFO ZWROTNE",
-            "value": "Gotowe, przeloguj się i sprawdź czy działa, daj mi proszę znać."
+            "value": "Gotowe, przeloguj się proszę i daj mi znać czy wszystko jest okej."
         },
         {
             "nazwa": "POTWIERDZENIE PRZEŁOŻONEGO",
-            "value": "Cześć, w celu uzyskania pomocy w tym zakresie, niezbędne jest uzyskanie autoryzacji przełożonego. Najprostszym sposobem jest dodanie go do rubryki \"Obserwatorzy\" w panelu po prawej stronie zgłoszenia i poproszenie go o potwierdzenie.",
+            "value": "Cześć, w celu uzyskania pomocy w tym zakresie, niezbędne jest uzyskanie autoryzacji przełożonego. Najprostszym sposobem jest dodanie go do rubryki \"Obserwatorzy\" w panelu po prawej stronie zgłoszenia i poproszenie o potwierdzenie.",
             "gif": "Dodanie_Obserwatora_Helpdesk.gif"
         },
         {
@@ -19,7 +19,7 @@
         },
         {
             "nazwa": "WYGASŁO HASŁO",
-            "value": "Hej dzisiaj upływa Ci ważność hasła, aby rozwiązać ten problem wystarczy je zmienić. Wciśnij CTRL+ALT+DEL na klawiaturze i wybierz opcje \"zmień hasło\". Jak już się uda, włącz na nowo Winpro. Proszę o informację czy problem został rozwiązany."
+            "value": "Hej, dzisiaj upływa Ci ważność hasła, aby rozwiązać ten problem wystarczy je zmienić. Wciśnij CTRL+ALT+DEL na klawiaturze i wybierz opcje \"zmień hasło\". Jak już się uda, włącz na nowo Winpro. Proszę o informację czy problem został rozwiązany."
         },
         {
             "nazwa": "PORTAL PRACOWNICZY",
@@ -42,6 +42,10 @@
             "nazwa": "AUTORESPONDER MAIL",
             "value": "Cześć, automatyczną odpowiedź możesz ustawić własnoręcznie, w załączniku przesyłam instrukcję.",
             "gif": "Jak_ustawic_automatyczna_odpowiedz_email.gif"
+        },
+        {
+            "nazwa": "GOTOWE ZGŁOSZENIE",
+            "value": "Gotowe."
         },
         {
             "nazwa": "ZAMYKANIE ZGŁOSZENIA",
