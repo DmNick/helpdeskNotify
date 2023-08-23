@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.1
+// @version      0.98.2
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -297,7 +297,7 @@
     const ifLoaded = async (div) => {
         var x = 0;
         var tid = await setInterval(()=>{
-            //console.log("wczytywanie1");
+            //console.log("wczytywanie "+div);
             if ($(div).length == 1) {
                 functionToLoad();
             }
@@ -310,8 +310,8 @@
 
         function functionToLoad(){
             clearInterval(tid);
-            //console.log("wczytano1");
-            return true;
+            //console.log("wczytano "+div);
+            return (true);
         }
 
         function returnFalse(){
@@ -423,13 +423,26 @@
         //console.log(bezParagrafu(xjson.description));
     }
 
+    function zamknijZgloszenie(){
+        try {
+
+
+            ifLoaded("[ng-model='workingTime.disabled']").then(()=>{
+                $("[ng-model='workingTime.disabled']").click();
+            });
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
     function dodajIZakoncz(){
         let panel = $(".upload-files > .actions");
         ifLoaded("[ng-click='addComment()']").then(() => {
             if(!document.querySelector(".dodajIZakoncz")){
-                let button = document.createElement("button");
+                let button = document.createElement("div");
                 button.classList = 'btn btn-info dodajIZakoncz';
-                button.innerHTML = "<span ng-transclude=''>Dodaj i zakończ</span>";
+                button.innerHTML = "Dodaj i zakończ";
                 button.style.padding = "8px 20px";
                 button.style.fontSize = "13px";
                 button.style.fontWeight = "600";
@@ -437,11 +450,38 @@
                 //button.preventDefault();
                 button.addEventListener('click',(el) => {
                     el.preventDefault()
-                    console.log("click");
-                    let wew = document.querySelector("[ng-model='comment.isInternal']").checked;
-                    let txt = $("div[ta-bind='ta-bind']").html();
+                    let wew = document.querySelector("#wrap [ng-model='comment.isInternal']").checked;
+                    let txt = $("[name='editor'] div[ta-bind='ta-bind']").html();
+                    const cb = $("#wrap [ng-model='comment.isInternal']")[0];
+                    const editorTxt = $("[name='close-ticket-editor'] div[ta-bind='ta-bind']");
+                    const editorCb = $("[name='workTimeForm'] [ng-model='comment.isInternal']");
                     if(txt == '<p><br></p>'){txt = ''}
+                    //console.log(wew);
+                    //console.log(txt);
+                    $("[ax-select-change='setStatus()'] select")[0].selectedIndex = $("[ax-select-change='setStatus()'] select")[0].length-1;
+                    document.querySelector("[ax-select-change='setStatus()'] select").dispatchEvent(new Event('change'));
 
+                    var tid = setInterval(()=>{
+                        //console.log("wczytywanie");
+                        var elementExist = $("[name='close-ticket-editor'] div[ta-bind='ta-bind']");
+                        if (elementExist.length == 1) {
+                            functionToLoad();
+                        }
+                    }, 500);
+
+                    function functionToLoad(){
+                        clearInterval(tid);
+                        //console.log("wczytano checkbox");
+                        $("[ng-model='workingTime.disabled']").click();
+                        document.querySelector("[name='close-ticket-editor'] div[ta-bind='ta-bind']").innerHTML = txt;
+                        //if(cb.checked){editorCb.checked = true}
+                        console.log(cb.checked);
+                        console.log($("[name='workTimeForm'] [ng-model='comment.isInternal']").checked);
+                    }
+
+                    zamknijZgloszenie();
+
+                    //ifLoaded("[ng-model='workingTime.disabled']").then(()=>{$("[ng-model='workingTime.disabled']").checked = true;});
 
                 });
             }
@@ -461,7 +501,7 @@
     function insertZalacznik(e){
         GM.xmlHttpRequest({
             method: "GET",
-            url: "https://dmnick.ovh/h/"+e,
+            url: "https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/gify/"+e,
             responseType: "blob",
             onload: function(resp) {
                 //console.log(resp);
@@ -531,20 +571,20 @@
                 $("#selectSzablony select").on("change",(el,index) => {
                     var e = el.target;
                     var wybor = e.options[e.selectedIndex].text;
-                    let cb = $("[ng-model='comment.isInternal']")[0];
-                    let tekst = $("div[ta-bind='ta-bind']").html();
+                    let cb = $("#wrap [ng-model='comment.isInternal']")[0];
+                    let tekst = $("[name='editor'] div[ta-bind='ta-bind']").html();
                     let dataGif = e.options[e.selectedIndex].getAttribute('data-gif');
                     if(tekst == '<p><br></p>'){tekst=''}
                     switch(wybor){
                         case('Wyczyść'):
-                            $("div[ta-bind='ta-bind']").html('<p><br></p>');
+                            $("[name='editor'] div[ta-bind='ta-bind']").html('<p><br></p>');
                             $("[ng-click='removeFile(f)']").click();
-                            document.querySelector("div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
+                            document.querySelector("[name='editor'] div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
                             break;
                         default:
                             if(cb.checked == true){cb.click()}
-                            $("div[ta-bind='ta-bind']").html(tekst+"<p>"+e.options[e.selectedIndex].title+"</p>");
-                            document.querySelector("div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
+                            $("[name='editor'] div[ta-bind='ta-bind']").html(tekst+"<p>"+e.options[e.selectedIndex].title+"</p>");
+                            document.querySelector("[name='editor'] div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
                             if(dataGif && dataGif !== '' && dataGif !== null){
                                 //console.log(dataGif);
                                 insertZalacznik(dataGif);
@@ -584,7 +624,7 @@
                             //console.log(this);
                             if(hasPrintLayout()){printLayout(this)};
                             wczytajSzablony();
-                            //dodajIZakoncz();
+                            dodajIZakoncz();
                             if(hasWylaczWewnetrzneOdp()){WylaczWewnetrzneOdp()};
                         }
                     }
