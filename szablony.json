@@ -7,7 +7,7 @@
         {
             "nazwa": "POTWIERDZENIE PRZEŁOŻONEGO",
             "value": "Cześć, w celu uzyskania pomocy w tym zakresie, niezbędne jest uzyskanie autoryzacji przełożonego. Najprostszym sposobem jest dodanie go do rubryki \"Obserwatorzy\" w panelu po prawej stronie zgłoszenia i poproszenie o potwierdzenie.",
-            "zalacznik": "Dodanie_Obserwatora_Helpdesk.gif"
+            "zalacznik": "https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/gify/Dodanie_Obserwatora_Helpdesk.gif"
         },
         {
             "nazwa": "ZDALNE",
@@ -36,12 +36,12 @@
         {
             "nazwa": "PRZEKIEROWANIE MAILA",
             "value": "Cześć, przekierowanie maila możesz ustawić własnoręcznie, w załączniku przesyłam instrukcję.",
-            "zalacznik": "Jak_ustawic_delegacje_konta_email.gif"
+            "zalacznik": "https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/gify/Jak_ustawic_delegacje_konta_email.gif"
         },
         {
             "nazwa": "AUTORESPONDER MAIL",
             "value": "Cześć, automatyczną odpowiedź możesz ustawić własnoręcznie, w załączniku przesyłam instrukcję.",
-            "zalacznik": "Jak_ustawic_automatyczna_odpowiedz_email.gif"
+            "zalacznik": "https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/gify/Jak_ustawic_automatyczna_odpowiedz_email.gif"
         },
         {
             "nazwa": "GOTOWE ZGŁOSZENIE",
