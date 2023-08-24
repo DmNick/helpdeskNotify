@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.5
+// @version      0.98.6
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -19,6 +19,7 @@
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 /* global $ */
+/* global Swal */
 
 (function() {
     'use strict';
@@ -157,23 +158,24 @@
         padding: 10px;
         font-weight:bold;
         box-sizing: border-box;
-        position: absolute;
-        z-index: -1;
+        /*position: absolute;
+        z-index: -1;*/
     }
 
     #details-additional-fields {
      text-align: -webkit-center;
     }
 
-    .printNazwa {
+    .printNazwa, .printOpis {
      overflow: hidden;
      display: -webkit-box;
      -webkit-line-clamp: 2;
      line-clamp: 2;
      -webkit-box-orient: vertical;
+     line-height: 30px;
     }
 
-    .printOpis, .printPodpis {
+    .printPodpis {
      overflow: hidden;
      display: -webkit-box;
      -webkit-line-clamp: 1;
@@ -685,6 +687,7 @@
             let tab = [];
             document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
                 tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
+                el.lastElementChild.setAttribute("contenteditable",true);
             });
             //console.log(tab);
             if(tab["Lokalizacja:"]){tab["Miejsce pracy:"] = tab["Lokalizacja:"]}
@@ -748,8 +751,8 @@
                 document.querySelector("#details-additional-fields").append(printButton);
 
                 printButton.addEventListener('click',(el)=>{
-                //console.log(el.target);
-                /*Print(naklejka, {
+                    //console.log(el.target);
+                    /*Print(naklejka, {
                     onStart: function() {
                         //console.log('onStart', new Date())
                     },
@@ -757,12 +760,20 @@
                         //console.log('onEnd', new Date())
                     }
                 })*/
-                //printJS('naklejka', 'html');
-                $(naklejka).printThis({
-                    importCSS: true,
-                    importStyle: true
+                    //printJS('naklejka', 'html');
+                    document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
+                        tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
+                    });
+                    naklejka.innerHTML = `
+            <div class="printNazwa">#${resp.displayId} ${resp.subject}</div>
+            <div class="printOpis"><span class="printOpisMP">${tab["Miejsce pracy:"]??''}</span> <span class="printOpisNP">${tab["Numer pomieszczenia:"]??''}</span> <span class="printOpisNK">${tab["Numer kontaktowy:"]??''}<span></div>
+            <div class="printPodpis">${resp.requester.fullName}</div>
+            `;
+                    $(naklejka).printThis({
+                        importCSS: true,
+                        importStyle: true
+                    });
                 });
-            });
             }
             let naklejka = document.querySelector("#naklejka");
             let printButton = document.querySelector("#printButton");
@@ -886,7 +897,7 @@
 
     function saveSettings(){
         Swal.fire({
-            position: 'top-center',
+            position: 'center',
             icon: 'success',
             title: 'Zapisano ustawienia',
             showConfirmButton: false,
