@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.3
+// @version      0.98.4
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -552,10 +552,14 @@
                 //        $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value, attr: {"data-gif":el.gif??""}}).appendTo( ".form-select" );
                 //    });
                 //});
+                let linkSzablony = "https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json";
+                if(localStorage.getItem("HP-Szablony") && localStorage.getItem("HP-Szablony") !== ''){
+                    linkSzablony = localStorage.getItem("HP-Szablony");
+                }
 
                 $.ajax({
                     cache: false,
-                    url: localStorage.getItem("HP-Szablony")??"https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json",
+                    url: linkSzablony,
                     dataType: "json",
                     success: function(e) {
                         e.szablony.forEach((el,index) => {
