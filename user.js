@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.6
+// @version      0.98.7
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -62,11 +62,11 @@
      height:400px;
      max-height:400px;
      overflow-y:auto;
-     //-webkit-animation-name: move;
-     //-webkit-animation-duration: 10s;
-     //-webkit-animation-iteration-count: infinite;
-     //-webkit-animation-direction: up;
-     //-webkit-animation-timing-function:linear;
+     /*-webkit-animation-name: move;
+     -webkit-animation-duration: 10s;
+     -webkit-animation-iteration-count: infinite;
+     -webkit-animation-direction: up;
+     -webkit-animation-timing-function:linear;*/
     }
 
     .card > sup {
@@ -175,12 +175,13 @@
      line-height: 30px;
     }
 
-    .printPodpis {
+    .printPodpis, .printInfo {
      overflow: hidden;
      display: -webkit-box;
      -webkit-line-clamp: 1;
      line-clamp: 1;
      -webkit-box-orient: vertical;
+     line-height: 30px;
     }
 
     #details-additional-fields input, .form-select {
@@ -651,7 +652,7 @@
                         if (this.status == 200){
                             //console.log(this.responseURL.split("/"));
                             //console.log(this);
-                            if(hasPrintLayout()){printLayout(this)};
+                            if(hasPrintLayout()){createPrintLayout(this)};
                             wczytajSzablony();
                             dodajIZakoncz();
                             if(hasWylaczWewnetrzneOdp()){WylaczWewnetrzneOdp()};
@@ -667,11 +668,10 @@
         };
     };
 
-    function printLayout(el){
+    function createPrintLayout(el){
         let resp = JSON.parse(el.response);
         let opis = document.querySelector("#details-additional-fields");
         var tid = setInterval(()=>{
-            //console.log("wczytywanie");
             var elementExist = $('#details-additional-fields');
             if (elementExist.length == 1) {
                 functionToLoad();
@@ -680,16 +680,11 @@
 
         function functionToLoad(){
             clearInterval(tid);
-            //console.log("wczytano");
-            //console.log(document.querySelector("#details-additional-fields"));
-            //console.log(resp);
-            //console.log(JSON.parse(resp.customFields).fields);
             let tab = [];
             document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
                 tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
                 el.lastElementChild.setAttribute("contenteditable",true);
             });
-            //console.log(tab);
             if(tab["Lokalizacja:"]){tab["Miejsce pracy:"] = tab["Lokalizacja:"]}
             if(tab["Nr kontaktowy:"]){tab["Numer kontaktowy:"] = tab["Nr kontaktowy:"]}
             if(!tab["Miejsce pracy:"] && !document.querySelector("#Miejsce\\ pracy\\:")){
@@ -731,65 +726,47 @@
                 div.append(input);
             }
 
-            if(document.querySelector("#naklejka")){
-                let naklejka = document.querySelector("#naklejka");
-                let printButton = document.querySelector("#printButton");
-            }
-            else {
-                let naklejka = document.createElement("div");
-                document.querySelector("[ng-model='ticket.description']").append(naklejka);
-                naklejka.id = 'naklejka';
-                naklejka.style.display = "block";
-                naklejka.style.width = "150mm";
-                naklejka.style.height = "35mm";
-                naklejka.style.fontSize = "30px";
-                let printButton = document.createElement("button");
-                printButton.id = "printButton";
-                printButton.style.color = "#000";
-                printButton.innerHTML = "Drukuj";
-                document.querySelector("#details-additional-fields").append(document.createElement("br"));
-                document.querySelector("#details-additional-fields").append(printButton);
-
-                printButton.addEventListener('click',(el)=>{
-                    //console.log(el.target);
-                    /*Print(naklejka, {
-                    onStart: function() {
-                        //console.log('onStart', new Date())
-                    },
-                    onEnd: function() {
-                        //console.log('onEnd', new Date())
-                    }
-                })*/
-                    //printJS('naklejka', 'html');
-                    document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
-                        tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
-                    });
-                    naklejka.innerHTML = `
-            <div class="printNazwa">#${resp.displayId} ${resp.subject}</div>
-            <div class="printOpis"><span class="printOpisMP">${tab["Miejsce pracy:"]??''}</span> <span class="printOpisNP">${tab["Numer pomieszczenia:"]??''}</span> <span class="printOpisNK">${tab["Numer kontaktowy:"]??''}<span></div>
-            <div class="printPodpis">${resp.requester.fullName}</div>
-            `;
-                    $(naklejka).printThis({
-                        importCSS: true,
-                        importStyle: true
-                    });
+            if(!document.querySelector("#dodatkoweInfo")){
+                let div = document.createElement("div");
+                let input = document.createElement("input");
+                input.id = "dodatkoweInfo";
+                input.autocomplete = "off";
+                input.placeholder = "Dodatkowe informacje";
+                input.addEventListener('keyup',(el)=>{
+                    document.querySelectorAll(".printInfo")[0].innerHTML = el.target.value;
                 });
+                document.querySelector("#details-additional-fields").append(div);
+                div.append(input);
             }
-            let naklejka = document.querySelector("#naklejka");
-            let printButton = document.querySelector("#printButton");
+
+            let naklejka = document.createElement("div");
+            document.querySelector("[ng-model='ticket.description']").append(naklejka);
+            naklejka.id = 'naklejka';
+            naklejka.style.display = "block";
+            naklejka.style.width = "150mm";
+            naklejka.style.height = "35mm";
+            naklejka.style.fontSize = "30px";
+            let printButton = document.createElement("button");
+            printButton.id = "printButton";
             printButton.classList = "btn btn-default";
             printButton.style.color = "var(--primary-button-background)";
+            printButton.innerHTML = "Drukuj";
+            printButton.addEventListener('click',(el)=>{
+                $(naklejka).printThis({
+                    importCSS: true,
+                    importStyle: true
+                });
+            });
+            document.querySelector("#details-additional-fields").append(document.createElement("br"));
+            document.querySelector("#details-additional-fields").append(printButton);
+
             naklejka.innerHTML = `
             <div class="printNazwa">#${resp.displayId} ${resp.subject}</div>
             <div class="printOpis"><span class="printOpisMP">${tab["Miejsce pracy:"]??''}</span> <span class="printOpisNP">${tab["Numer pomieszczenia:"]??''}</span> <span class="printOpisNK">${tab["Numer kontaktowy:"]??''}<span></div>
             <div class="printPodpis">${resp.requester.fullName}</div>
+            <div class="printInfo"></div>
             `;
-            //$('#printButton').replaceWith($('#printButton').clone());
-
         }
-    }
-
-    function createPrintLayout(resp){
 
     }
 
