@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.2
+// @version      0.98.3
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -474,6 +474,7 @@
                         //console.log("wczytano checkbox");
                         $("[ng-model='workingTime.disabled']").click();
                         document.querySelector("[name='close-ticket-editor'] div[ta-bind='ta-bind']").innerHTML = txt;
+                        document.querySelector("[name='close-ticket-editor'] div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
                         //if(cb.checked){editorCb.checked = true}
                         console.log(cb.checked);
                         console.log($("[name='workTimeForm'] [ng-model='comment.isInternal']").checked);
@@ -501,7 +502,7 @@
     function insertZalacznik(e){
         GM.xmlHttpRequest({
             method: "GET",
-            url: "https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/gify/"+e,
+            url: ""+e+"",
             responseType: "blob",
             onload: function(resp) {
                 //console.log(resp);
@@ -544,12 +545,27 @@
                 ].join(',');
                 //console.log(document.querySelectorAll("#selectSzablony select option"));
 
-                $.getJSON('https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json',(e)=>{
+                //$.getJSON('https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json',(e)=>{
                     //console.log(e.szablony);
-                    e.szablony.forEach((el,index) => {
+                //    e.szablony.forEach((el,index) => {
                         //console.log(el);
-                        $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value, attr: {"data-gif":el.gif??""}}).appendTo( ".form-select" );
-                    });
+                //        $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value, attr: {"data-gif":el.gif??""}}).appendTo( ".form-select" );
+                //    });
+                //});
+
+                $.ajax({
+                    cache: false,
+                    url: localStorage.getItem("HP-Szablony")??"https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json",
+                    dataType: "json",
+                    success: function(e) {
+                        e.szablony.forEach((el,index) => {
+                            $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value, attr: {"data-gif":el.zalacznik??""}}).appendTo( ".form-select" );
+                        });
+                    },
+                    error: function (er) {
+                        alert("błąd przy wczytywaniu szablonu: "+er.responseText);
+                        console.log(er);
+                    }
                 });
 
                 function formatCustom(state) {
@@ -874,9 +890,10 @@
         <div><label for="HP-AudioKrytyczny">Krytyczny priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioKrytyczny" /><button class="testMp3">Test</button></div>
         <div><label for="HP-AudioBloker">Bloker priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioBloker" /><button class="testMp3">Test</button></div>
         <div><label for="HP-AudioAwaria">Awaria: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioAwaria" /><button class="testMp3">Test</button></div>
-        <div><label for="HP-OpenLayout">Auto uruchom layout: </label><input class="cbox" type="checkbox" id="HP-OpenLayout" /></div>
-        <div><label for="HP-PrintLayout">Drukowanie etykietek: </label><input class="cbox" type="checkbox" id="HP-PrintLayout" /></div>
-        <div><label for="HP-WylaczWewnetrzneOdp">Wyłącz zawsze wewnętrzne: </label><input class="cbox" type="checkbox" id="HP-WylaczWewnetrzneOdp" /></div>
+        <div><label for="HP-OpenLayout" title="Automatycznie uruchamia layout przy odswieżeniu strony">Auto uruchom layout: </label><input class="cbox" type="checkbox" id="HP-OpenLayout" /></div>
+        <div><label for="HP-PrintLayout" title="Etykietki na stronie ze skóconymi informacjami o zgłoszeniu">Drukowanie etykietek: </label><input class="cbox" type="checkbox" id="HP-PrintLayout" /></div>
+        <div><label for="HP-WylaczWewnetrzneOdp" title="Wyłącza domyślnie wewnętrzne odpowiedzi w zgłoszeniach">Wyłącz zawsze wewnętrzne: </label><input class="cbox" type="checkbox" id="HP-WylaczWewnetrzneOdp" /></div>
+        <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px; color:white" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a></div>
         `;
 
 
