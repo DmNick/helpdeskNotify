@@ -158,8 +158,8 @@
         padding: 10px;
         font-weight:bold;
         box-sizing: border-box;
-        /*position: absolute;
-        z-index: -1;*/
+        position: absolute;
+        z-index: -1;
     }
 
     #details-additional-fields {
