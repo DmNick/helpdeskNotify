@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.8
+// @version      0.98.81
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -154,7 +154,7 @@
         flex-wrap: wrap;
         align-content: flex-end;
         align-items: flex-end;
-        margin: 0;
+        margin: 5px 15px;
         padding: 10px;
         font-weight:bold;
         box-sizing: border-box;
@@ -184,7 +184,7 @@
      line-height: 30px;
     }
 
-    #details-additional-fields input, .form-select {
+    .theme-dark #details-additional-fields input, .form-select {
      margin: 5px 5px;
      border-radius: 5px;
      border:1px;
@@ -194,12 +194,12 @@
      color:var(--secondary-font-color);
     }
 
-    #details-additional-fields input::placeholder {
+    .theme-dark #details-additional-fields input::placeholder {
      color:white;
      opacity: 0.8;
     }
 
-    #details-additional-fieldsinput:focus{
+    .theme-dark #details-additional-fieldsinput:focus{
      outline: none;
      outline-style: none;
     }
@@ -214,6 +214,10 @@
      color:grey;
      max-height:30px;
      overflow-y:hidden;
+    }
+
+    .przekreslone {
+     text-decoration: line-through;
     }
 
     @page {
@@ -695,16 +699,80 @@
         function functionToLoad(){
             clearInterval(tid);
             if(!document.querySelector("#printButton")){
-                let tab = [];
-                document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
-                    tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
-                    el.lastElementChild.setAttribute("contenteditable",true);
-                    el.lastElementChild.addEventListener('keyup',(ele)=>{
-                        //console.log("."+el.firstElementChild.innerText);
-                        $("."+el.firstElementChild.innerText.replace(" ",".").replace(":","\\:")).html(el.lastElementChild.innerText);
-                        tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
+                let printButton = document.createElement("button");
+                printButton.id = "printButton";
+                printButton.classList = "btn btn-default";
+                printButton.style.color = "var(--primary-button-background)";
+                printButton.innerHTML = "Drukuj";
+                printButton.addEventListener('click',(el)=>{
+                    $(naklejka).printThis({
+                        importCSS: true,
+                        importStyle: true
                     });
                 });
+
+                let naklejka = document.createElement("div");
+                document.querySelector("[ng-model='ticket.description']").append(naklejka);
+                naklejka.id = 'naklejka';
+                naklejka.style.display = "block";
+                naklejka.style.width = "150mm";
+                naklejka.style.height = "35mm";
+                naklejka.style.fontSize = "30px";
+                naklejka.innerHTML = `<div class="printNazwa">#${resp.displayId} ${resp.subject}</div>
+                                      <div class="printOpis">
+                                      <span class="printMP"></span>
+                                      <span class="printNP"></span>
+                                      <span class="printNK"><span>
+                                      </div>
+                                      <div class="printPodpis">${resp.requester.fullName}</div>
+                                      <div class="printInfo"></div>`;
+
+                let tab = [];
+                document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
+                    if(el.firstElementChild.innerText == "Miejsce pracy:" || el.firstElementChild.innerText == "Lokalizacja:"){
+                        el.lastElementChild.setAttribute("data-dodatkowe_pola","printMP");
+                    }
+                    if(el.firstElementChild.innerText == "Numer pomieszczenia:"){
+                        el.lastElementChild.setAttribute("data-dodatkowe_pola","printNP");
+                    }
+                    if(el.firstElementChild.innerText == "Numer kontaktowy:" || el.firstElementChild.innerText == "Nr kontaktowy:"){
+                        el.lastElementChild.setAttribute("data-dodatkowe_pola","printNK");
+                    }
+
+                    const ajdi = el.lastElementChild.getAttribute("data-dodatkowe_pola");
+                    //console.log(ajdi);
+                    tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
+                    el.firstElementChild.addEventListener("click",(e)=>{
+                        //console.log(el.firstElementChild);
+                        el.firstElementChild.classList.toggle("przekreslone");
+
+                        if(el.firstElementChild.classList.contains("przekreslone")){
+                            //console.log("przekreślone");
+                            $("."+ajdi).html("");
+                        }
+                        else {
+                            //console.log("przekreślenie wycofane");
+                            if(ajdi == 'printMP'){$("."+ajdi).html(el.lastElementChild.innerText)}
+                            else{$("."+ajdi).html(" | "+el.lastElementChild.innerText)}
+                            //console.log($("[data-dodatkowe_pola='"+ajdi+"']").text());
+                        }
+                    });
+
+
+
+
+                    if(ajdi == 'printMP'){$("."+ajdi).html(el.lastElementChild.innerText)}
+                    else{$("."+ajdi).html(" | "+el.lastElementChild.innerText)}
+
+                    el.lastElementChild.setAttribute("contenteditable",true);
+                    el.lastElementChild.addEventListener('keyup',(ele)=>{
+                        if(ajdi == 'printMP'){$("."+ajdi).html(el.lastElementChild.innerText)}
+                        else{$("."+ajdi).html(" | "+el.lastElementChild.innerText)}
+                        //console.log( el.lastElementChild.getAttribute("data-dodatkowe_pola") );
+                        //console.log(ele);
+                    });
+                });
+
                 if(tab["Lokalizacja:"]){tab["Miejsce pracy:"] = tab["Lokalizacja:"]}
                 if(tab["Nr kontaktowy:"]){tab["Numer kontaktowy:"] = tab["Nr kontaktowy:"]}
                 if(!tab["Miejsce pracy:"] && !document.querySelector("#Miejsce\\ pracy\\:")){
@@ -714,7 +782,7 @@
                     input.autocomplete = "off";
                     input.placeholder = "Miejsce pracy";
                     input.addEventListener('keyup',(el)=>{
-                        document.querySelectorAll(".Miejsce.pracy\\:")[0].innerHTML = el.target.value;
+                        document.querySelectorAll(".printMP")[0].innerHTML = el.target.value;
                     });
                     document.querySelector("#details-additional-fields").append(div);
                     div.append(input);
@@ -727,7 +795,7 @@
                     input.autocomplete = "off";
                     input.placeholder = "Numer pomieszczenia";
                     input.addEventListener('keyup',(el)=>{
-                        document.querySelectorAll(".Numer.pomieszczenia\\:")[0].innerHTML = " | "+el.target.value;
+                        document.querySelectorAll(".printNP")[0].innerHTML = " | "+el.target.value;
                     });
                     document.querySelector("#details-additional-fields").append(div);
                     div.append(input);
@@ -740,7 +808,7 @@
                     input.autocomplete = "off";
                     input.placeholder = "Numer kontaktowy";
                     input.addEventListener('keyup',(el)=>{
-                        document.querySelectorAll(".Numer.kontaktowy\\:")[0].innerHTML = " | "+el.target.value;
+                        document.querySelectorAll(".printNK")[0].innerHTML = " | "+el.target.value;
                     });
                     document.querySelector("#details-additional-fields").append(div);
                     div.append(input);
@@ -759,36 +827,8 @@
                     div.append(input);
                 }
 
-                let naklejka = document.createElement("div");
-                document.querySelector("[ng-model='ticket.description']").append(naklejka);
-                naklejka.id = 'naklejka';
-                naklejka.style.display = "block";
-                naklejka.style.width = "150mm";
-                naklejka.style.height = "35mm";
-                naklejka.style.fontSize = "30px";
-                let printButton = document.createElement("button");
-                printButton.id = "printButton";
-                printButton.classList = "btn btn-default";
-                printButton.style.color = "var(--primary-button-background)";
-                printButton.innerHTML = "Drukuj";
-                printButton.addEventListener('click',(el)=>{
-                    document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
-                        tab[el.firstElementChild.innerText] = el.lastElementChild.innerText;
-
-                    });
-                    $(naklejka).printThis({
-                        importCSS: true,
-                        importStyle: true
-                    });
-                });
                 document.querySelector("#details-additional-fields").append(document.createElement("br"));
                 document.querySelector("#details-additional-fields").append(printButton);
-                naklejka.innerHTML = `
-            <div class="printNazwa">#${resp.displayId} ${resp.subject}</div>
-            <div class="printOpis"><span class="Miejsce pracy:">${tab["Miejsce pracy:"]??''}</span> <span class="Numer pomieszczenia:">${tab["Numer pomieszczenia:"]??''}</span> <span class="Numer kontaktowy:">${tab["Numer kontaktowy:"]??''}<span></div>
-            <div class="printPodpis">${resp.requester.fullName}</div>
-            <div class="printInfo"></div>
-            `;
             }
         }
 
