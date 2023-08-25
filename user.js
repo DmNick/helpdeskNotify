@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.81
+// @version      0.98.82
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -154,7 +154,7 @@
         flex-wrap: wrap;
         align-content: flex-end;
         align-items: flex-end;
-        margin: 5px 15px;
+        margin: 0px 10px;
         padding: 10px;
         font-weight:bold;
         box-sizing: border-box;
