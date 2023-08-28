@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.82
+// @version      0.98.83
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -145,43 +145,8 @@
      margin-bottom: 0;
     }
 
-    #naklejka {
-        display: flex;
-        width: 150mm;
-        height: 35mm;
-        font-size: 18px;
-        /*font-family: diabloFont;*/
-        flex-wrap: wrap;
-        align-content: flex-end;
-        align-items: flex-end;
-        margin: 0px 10px;
-        padding: 10px;
-        font-weight:bold;
-        box-sizing: border-box;
-        position: absolute;
-        z-index: -1;
-    }
-
     #details-additional-fields {
      text-align: -webkit-center;
-    }
-
-    .printNazwa, .printOpis {
-     overflow: hidden;
-     display: -webkit-box;
-     -webkit-line-clamp: 2;
-     line-clamp: 2;
-     -webkit-box-orient: vertical;
-     line-height: 30px;
-    }
-
-    .printPodpis, .printInfo {
-     overflow: hidden;
-     display: -webkit-box;
-     -webkit-line-clamp: 1;
-     line-clamp: 1;
-     -webkit-box-orient: vertical;
-     line-height: 30px;
     }
 
     .theme-dark #details-additional-fields input, .form-select {
@@ -221,21 +186,26 @@
     }
 
     @page {
-        size: auto;
-        /* auto is the initial value */
-        margin: 0mm;
-        /* this affects the margin in the printer settings */
+    size: 100mm 36mm;
+    /* auto is the initial value */
+    margin: 0;
+    /* this affects the margin in the printer settings */
+    overflow:hidden;
     }
 
     @media print {
-
-        html,
-        body {
-            margin: 0;
-            size: auto;
-            size: landscape;
-            /* size: 100mm 35mm;*/
-        }
+    * {
+        margin:0;
+        padding:0;
+    }
+    body {
+        size: 100mm 36mm;
+        margin:0!important;
+        padding:0!important;
+        width:100%;
+        height:35mm;
+        overflow:hidden;
+     }
     }
 
     @media screen and (max-width: 600px) {
@@ -706,26 +676,34 @@
                 printButton.innerHTML = "Drukuj";
                 printButton.addEventListener('click',(el)=>{
                     $(naklejka).printThis({
-                        importCSS: true,
+                        importCSS: false,
                         importStyle: true
                     });
                 });
 
                 let naklejka = document.createElement("div");
-                document.querySelector("[ng-model='ticket.description']").append(naklejka);
-                naklejka.id = 'naklejka';
+                document.body.append(naklejka);
+                naklejka.id = "naklejka";
                 naklejka.style.display = "block";
-                naklejka.style.width = "150mm";
-                naklejka.style.height = "35mm";
-                naklejka.style.fontSize = "30px";
-                naklejka.innerHTML = `<div class="printNazwa">#${resp.displayId} ${resp.subject}</div>
-                                      <div class="printOpis">
-                                      <span class="printMP"></span>
-                                      <span class="printNP"></span>
-                                      <span class="printNK"><span>
+                naklejka.style.width = "100mm";
+                naklejka.style.height = "36mm";
+                naklejka.style.overflow = "hidden";
+                naklejka.style.lineHeight = "17px";
+                naklejka.style.paddingTop = "5px";
+                naklejka.style.backgroundColor = "red";
+                naklejka.style.position = "fixed";
+                //naklejka.style.top = "0";
+                naklejka.style.fontFamily = "'Open Sans',sans-serif"
+                naklejka.style.fontSize = "5mm";
+                naklejka.style.fontWeight = "bold";
+                naklejka.innerHTML = `<div class="printNazwa" style="overflow: hidden;display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;line-height: 5mm">#${resp.displayId} ${resp.subject}</div>
+                                      <div class="printOpis" style="overflow: hidden;display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;line-height: 5mm;max-height:10mm">
+                                      <div class="printMP" style="float: left;"></div>
+                                      <div class="printNP" style="float: left;"></div>
+                                      <div class="printNK" style="float: left;"></div>
                                       </div>
-                                      <div class="printPodpis">${resp.requester.fullName}</div>
-                                      <div class="printInfo"></div>`;
+                                      <div class="printPodpis" style="clear:both;overflow: hidden;display: -webkit-box;-webkit-line-clamp: 1;-webkit-box-orient: vertical;line-height: 5mm">${resp.requester.fullName}</div>
+                                      <div class="printInfo" style="overflow: hidden;display: -webkit-box;-webkit-line-clamp: 1;-webkit-box-orient: vertical;line-height: 5mm"></div>`;
 
                 let tab = [];
                 document.querySelectorAll(".details-additional-fields__item").forEach(el=>{
