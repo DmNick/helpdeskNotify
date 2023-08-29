@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.83
+// @version      0.98.84
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -110,7 +110,8 @@
      left: 0;
      right: 0;
      min-height: 100px;
-     background-color: grey;
+     background-color: var(--primary-content-background);
+     border: 3px solid black;
      color: black;
      z-index: 999;
      overflow-y: auto;
@@ -118,7 +119,22 @@
     }
 
     #layoutSettings > button {
-     color:black;
+     color:white;
+     margin-top:10px;
+     font-weight: 600;
+     letter-spacing: 0;
+     border-radius: 4px;
+     font-size: 13px;
+     border: 4px;
+    }
+
+    #layoutSettings input {
+     background-color:grey;
+     color:white;
+    }
+
+    #layoutSettings input::placeholder {
+     color:white;
     }
 
     [ng-model='ticket.description'] > p > span {
@@ -129,8 +145,22 @@
      color: #c6d0dc!important;
     }
 
-    #dzwieki > div > label {
+    #dzwieki > div > label:not(.switch),
+    #dzwieki > div > span:not(.switch){
      width:200px;
+     display: inline-block;
+     color: var(--primary-label-color);
+    }
+
+    #dzwieki > div {
+     display: inline-flex;
+     align-items: center;
+     margin:5px 0 0 0;
+    }
+
+    #dzwieki .form-control {
+     width: auto;
+     /*height: 30px;*/
     }
 
     .ticket-description {
@@ -167,6 +197,10 @@
     .theme-dark #details-additional-fieldsinput:focus{
      outline: none;
      outline-style: none;
+    }
+
+    .theme-dark .comment * {
+     color:#c6d0dc!important;
     }
 
     .select2 {
@@ -278,16 +312,15 @@
         return text.innerText;
     }
 
-    const ifLoaded = async (div) => {
+    async function ifLoaded(div){
         var x = 0;
-        var tid = await setInterval(()=>{
+        var tid = setInterval(()=>{
             //console.log("wczytywanie "+div);
-            if ($(div).length == 1) {
+            if ($(div).length == 1 || $(div).ELEMENT_NODE == 1) {
                 functionToLoad();
             }
             if (x > 40){
                 returnFalse();
-                console.log("Przekroczono limit czasu: "+ div);
             }
             x++;
         }, 500);
@@ -295,19 +328,42 @@
         function functionToLoad(){
             clearInterval(tid);
             //console.log("wczytano "+div);
-            return (true);
+            return true;
         }
 
         function returnFalse(){
             clearInterval(tid);
+            console.log("Przekroczono limit czasu: "+ div);
             return false;
         }
     }
 
-    function audioAlert(type){
+    let ifLoaded2 = async (div) => new Promise((myResolve,myReject) => {
+        var x = 0;
+        //console.log(this);
+        var tid = setInterval(()=>{
+            //console.log("wczytywanie "+div);
+            //console.log($(div));
+            if ($(div).length == 1 || $(div).ELEMENT_NODE == 1) {
+                clearInterval(tid);
+                //console.log(x);
+                myResolve(true);
+            }
+            if (x > 40){
+                clearInterval(tid);
+                console.log("Przekroczono limit czasu dla: "+div);
+                myReject(false);
+            }
+            x++;
+        }, 500);
+
+    });
+
+    async function audioAlert(type){
         let linkMp3 = 'https://dmnick.ovh/h/alert.mp3';
         let linkMp3Awaria = 'https://dmnick.ovh/h/awaria.mp3';
         let linkMp3Przypomnienie = 'https://dmnick.ovh/h/widziszmnie.mp3';
+        let linkMp3Naklejka = 'https://dmnick.ovh/h/dobryprzekaznaklejka.mp3';
         let HPAudioNiski = localStorage.getItem("HP-AudioNiski")??null;
         let HPAudioWysoki = localStorage.getItem("HP-AudioWysoki")??null;
         let HPAudioKrytyczny = localStorage.getItem("HP-AudioKrytyczny")??null;
@@ -345,6 +401,9 @@
             case('przypomnienie30min'):
                 linkMp3 = linkMp3Przypomnienie;
                 break;
+            case('naklejka'):
+                linkMp3 = linkMp3Naklejka;
+                break;
             default:
                 break;
         }
@@ -356,7 +415,10 @@
                 alert("Niewspierany format: "
                       + this.error.message);
             }
-            audio.play();
+            audio.oncanplaythrough = function(){
+                audio.play();
+            }
+            //audio.play();
         }
         catch(e) {
             console.log("błąd przy odtwarzaniu: "+e);
@@ -410,10 +472,22 @@
     function zamknijZgloszenie(){
         try {
 
-
-            ifLoaded("[ng-model='workingTime.disabled']").then(()=>{
-                $("[ng-model='workingTime.disabled']").click();
+            ifLoaded2("[name='workTimeForm'] [ng-model='comment.isInternal']").then((el)=>{
+                //console.log("koniec ifLoaded2");
+                //console.log(el);
+                //console.log("wrap: "+$("#wrap [ng-model='comment.isInternal']")[0].checked);
+                if(el == true && $("#wrap [ng-model='comment.isInternal']")[0].checked){
+                    $("[name='workTimeForm'] [ng-model='comment.isInternal']")[0].click();
+                }
             });
+
+            //ifLoaded("[name='workTimeForm'] [ng-model='comment.isInternal']").finally((el)=>{
+            //    console.log(this);
+            //    if(el == true){console.log("wczytano zakończ");}
+            //    console.log(document.querySelector("[name='workTimeForm'] [ng-model='comment.isInternal']"));
+            //    document.querySelector("[name='workTimeForm'] [ng-model='comment.isInternal']").checked = true;
+            //    document.querySelector("[name='workTimeForm'] [ng-model='comment.isInternal']").dispatchEvent(new Event('change'));
+            //});
         }
         catch (e) {
             console.log(e);
@@ -436,9 +510,7 @@
                     el.preventDefault()
                     let wew = document.querySelector("#wrap [ng-model='comment.isInternal']").checked;
                     let txt = $("[name='editor'] div[ta-bind='ta-bind']").html();
-                    const cb = $("#wrap [ng-model='comment.isInternal']")[0];
-                    const editorTxt = $("[name='close-ticket-editor'] div[ta-bind='ta-bind']");
-                    const editorCb = $("[name='workTimeForm'] [ng-model='comment.isInternal']");
+                    let editorTxt = $("[name='close-ticket-editor'] div[ta-bind='ta-bind']");
                     if(txt == '<p><br></p>'){txt = ''}
                     //console.log(wew);
                     //console.log(txt);
@@ -455,13 +527,15 @@
 
                     function functionToLoad(){
                         clearInterval(tid);
+                        let cb = $("#wrap [ng-model='comment.isInternal']");
+                        let editorCb = $("[name='workTimeForm'] [ng-model='comment.isInternal']");
                         //console.log("wczytano checkbox");
                         $("[ng-model='workingTime.disabled']").click();
                         document.querySelector("[name='close-ticket-editor'] div[ta-bind='ta-bind']").innerHTML = txt;
                         document.querySelector("[name='close-ticket-editor'] div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
                         //if(cb.checked){editorCb.checked = true}
-                        console.log(cb.checked);
-                        console.log($("[name='workTimeForm'] [ng-model='comment.isInternal']").checked);
+                        //console.log(cb.checked);
+                        //console.log($("[name='workTimeForm'] [ng-model='comment.isInternal']").checked);
                     }
 
                     zamknijZgloszenie();
@@ -587,7 +661,7 @@
                             break;
                         default:
                             if(cb.checked == true){cb.click()}
-                            $("[name='editor'] div[ta-bind='ta-bind']").html(tekst+"<p>"+e.options[e.selectedIndex].title+"</p>");
+                            $("[name='editor'] div[ta-bind='ta-bind']").html(tekst+"<p>"+e.options[e.selectedIndex].title.replaceAll('\n','</br>')+"</p>");
                             document.querySelector("[name='editor'] div[ta-bind='ta-bind']").dispatchEvent(new Event('blur'));
                             if(dataGif && dataGif !== '' && dataGif !== null){
                                 //console.log(dataGif);
@@ -677,10 +751,11 @@
                 printButton.addEventListener('click',(el)=>{
                     $(naklejka).printThis({
                         importCSS: false,
-                        importStyle: true
+                        importStyle: true,
+                        afterPrint: async function after(){if(hasAudio()==true){audioAlert('naklejka')}}
                     });
                 });
-
+                if($("#naklejka")){$("#naklejka").remove()}
                 let naklejka = document.createElement("div");
                 document.body.append(naklejka);
                 naklejka.id = "naklejka";
@@ -730,8 +805,8 @@
                         }
                         else {
                             //console.log("przekreślenie wycofane");
-                            if(ajdi == 'printMP'){$("."+ajdi).html(el.lastElementChild.innerText)}
-                            else{$("."+ajdi).html(" | "+el.lastElementChild.innerText)}
+                            if(ajdi == 'printMP'){$("."+ajdi).html(el.lastElementChild.innerText+" ")}
+                            else{$("."+ajdi).html(" | "+el.lastElementChild.innerText+" ")}
                             //console.log($("[data-dodatkowe_pola='"+ajdi+"']").text());
                         }
                     });
@@ -740,12 +815,12 @@
 
 
                     if(ajdi == 'printMP'){$("."+ajdi).html(el.lastElementChild.innerText)}
-                    else{$("."+ajdi).html(" | "+el.lastElementChild.innerText)}
+                    else{$("."+ajdi).html(" | "+el.lastElementChild.innerText+" ")}
 
                     el.lastElementChild.setAttribute("contenteditable",true);
                     el.lastElementChild.addEventListener('keyup',(ele)=>{
                         if(ajdi == 'printMP'){$("."+ajdi).html(el.lastElementChild.innerText)}
-                        else{$("."+ajdi).html(" | "+el.lastElementChild.innerText)}
+                        else{$("."+ajdi).html(" | "+el.lastElementChild.innerText+" ")}
                         //console.log( el.lastElementChild.getAttribute("data-dodatkowe_pola") );
                         //console.log(ele);
                     });
@@ -933,28 +1008,31 @@
         var dzwieki = document.createElement('div');
         dzwieki.id = "dzwieki";
         settings.prepend(dzwieki);
-        dzwieki.innerHTML = `<div><label for="HP-AudioNiski">Niski priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioNiski" /><button class="testMp3">Test</button></div>
-        <div><label for="HP-AudioWysoki">Wysoki priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioWysoki" /><button class="testMp3">Test</button></div>
-        <div><label for="HP-AudioKrytyczny">Krytyczny priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioKrytyczny" /><button class="testMp3">Test</button></div>
-        <div><label for="HP-AudioBloker">Bloker priorytet: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioBloker" /><button class="testMp3">Test</button></div>
-        <div><label for="HP-AudioAwaria">Awaria: </label><input class="audio" type="text" placeholder="podaj link do .mp3" id="HP-AudioAwaria" /><button class="testMp3">Test</button></div>
-        <div><label for="HP-OpenLayout" title="Automatycznie uruchamia layout przy odswieżeniu strony">Auto uruchom layout: </label><input class="cbox" type="checkbox" id="HP-OpenLayout" /></div>
-        <div><label for="HP-PrintLayout" title="Etykietki na stronie ze skóconymi informacjami o zgłoszeniu">Drukowanie etykietek: </label><input class="cbox" type="checkbox" id="HP-PrintLayout" /></div>
-        <div><label for="HP-WylaczWewnetrzneOdp" title="Wyłącza domyślnie wewnętrzne odpowiedzi w zgłoszeniach">Wyłącz zawsze wewnętrzne: </label><input class="cbox" type="checkbox" id="HP-WylaczWewnetrzneOdp" /></div>
-        <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px; color:white" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a></div>
+        dzwieki.innerHTML = `
+        <div><label for="HP-AudioNiski">Niski priorytet: </label><input class="audio form-control" type="text" placeholder="podaj link do .mp3" id="HP-AudioNiski" /><button class="testMp3 btn">Test</button></div>
+        <div><label for="HP-AudioWysoki">Wysoki priorytet: </label><input class="audio form-control" type="text" placeholder="podaj link do .mp3" id="HP-AudioWysoki" /><button class="testMp3 btn">Test</button></div>
+        <div><label for="HP-AudioKrytyczny">Krytyczny priorytet: </label><input class="audio form-control" type="text" placeholder="podaj link do .mp3" id="HP-AudioKrytyczny" /><button class="testMp3 btn">Test</button></div>
+        <div><label for="HP-AudioBloker">Bloker priorytet: </label><input class="audio form-control" type="text" placeholder="podaj link do .mp3" id="HP-AudioBloker" /><button class="testMp3 btn">Test</button></div>
+        <div><label for="HP-AudioAwaria">Awaria: </label><input class="audio form-control" type="text" placeholder="podaj link do .mp3" id="HP-AudioAwaria" /><button class="testMp3 btn">Test</button></div>
+        <div><span title="Automatycznie uruchamia layout przy odswieżeniu strony">Auto uruchom layout: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-OpenLayout"> <span class="slider"></span></label></div>
+        <div><span title="Etykietki na stronie ze skóconymi informacjami o zgłoszeniu">Drukowanie etykietek: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-PrintLayout"> <span class="slider"></span></label></div>
+        <div><span title="Wyłącza domyślnie wewnętrzne odpowiedzi w zgłoszeniach">Wyłącz zawsze wewnętrzne: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WylaczWewnetrzneOdp"> <span class="slider"></span></label></div>
+        <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio form-control" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px; color:white" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a></div>
         `;
 
 
         var save = document.createElement('button');
         save.innerHTML = "Zapisz";
+        save.classList.add('btn','btn-primary');
+        save.style.float = "left";
         save.addEventListener("click",()=>{
             //layout.style.top = '';
-            document.querySelectorAll("#dzwieki > div > input.audio").forEach(el => {
+            document.querySelectorAll("#dzwieki input.audio").forEach(el => {
                 //console.log(el.id);
                 localStorage.setItem(el.id,el.value);
                 //console.log(el.id+" => "+el.value+" "+el.checked);
             });
-            document.querySelectorAll("#dzwieki > div > input.cbox").forEach(el => {
+            document.querySelectorAll("#dzwieki input.cbox").forEach(el => {
                 //console.log(el.id);
                 let test = el.checked;
                 if(test === false){test = ''}
@@ -962,19 +1040,24 @@
                 //console.log(el.id+" => "+el.value+" "+el.checked);
             });
             saveSettings();
-            settings.classList.remove("widoczne");
-            settings.classList.add("niewidoczne");
+            $(settings).fadeOut();
+            //settings.classList.remove("widoczne");
+            //settings.classList.add("niewidoczne");
         });
-        settings.prepend(save);
+        settings.append(save);
 
         var remLayout = document.createElement('button');
         remLayout.innerHTML = "Zamknij";
+        remLayout.classList.add('btn','btn-danger');
+        remLayout.style.float = "right";
+        remLayout.style.padding = "8px 20px";
         remLayout.addEventListener("click",()=>{
             //layout.style.top = '';
+            $(settings).fadeOut(200);
             settings.classList.remove("widoczne");
             settings.classList.add("niewidoczne");
         });
-        settings.prepend(remLayout);
+        settings.append(remLayout);
 
         var testMp3 = document.querySelectorAll(".testMp3");
         testMp3.forEach((el,index) => {
@@ -1012,6 +1095,7 @@
     function openSettings(){
         var settings = document.querySelector("#layoutSettings");
         //layout.style.top = "0";
+        $(settings).fadeIn(800);
         settings.classList.remove("niewidoczne");
         settings.classList.add("widoczne");
         //document.querySelector("#HP-AudioNiski").value = localStorage.getItem("HP-AudioNiski")??'';
@@ -1071,7 +1155,7 @@
             newAudioDiv.prepend(newAudio);
             var openLayoutButton = document.createElement('div');
             openLayoutButton.innerHTML = [`
-            <a class="btn-icon" title="Otwórz layout"><i class="icon-hdicon-HD_all_Settings f-16"></i></a>
+            <a class="btn-icon" title="Otwórz layout"><i class="icon-hdicon-HD_all_help-center"></i></a>
             `].join('');
 
             openLayoutButton.addEventListener("click",()=>{
@@ -1083,7 +1167,7 @@
             //settings
             var openSettingsButton = document.createElement('div');
             openSettingsButton.innerHTML = [`
-            <a class="btn-icon" title="Otwórz ustawienia"><i class="icon-hdicon-HD_all_Settings f-16"></i></a>
+            <a class="btn-icon" title="Otwórz ustawienia"><i class="icon-hdicon-HD_all_Settings"></i></a>
             `].join('');
 
             openSettingsButton.addEventListener("click",()=>{
