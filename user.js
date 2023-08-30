@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.84
+// @version      0.98.85
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
 // @updateURL    https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
-// @match        https://helpdesk/
+// @match        https://helpdesk/*
 // @require  	 https://code.jquery.com/jquery-3.7.0.min.js
 // @require      https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/notifications.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/printThis/1.15.0/printThis.js
@@ -1017,9 +1017,8 @@
         <div><span title="Automatycznie uruchamia layout przy odswieżeniu strony">Auto uruchom layout: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-OpenLayout"> <span class="slider"></span></label></div>
         <div><span title="Etykietki na stronie ze skóconymi informacjami o zgłoszeniu">Drukowanie etykietek: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-PrintLayout"> <span class="slider"></span></label></div>
         <div><span title="Wyłącza domyślnie wewnętrzne odpowiedzi w zgłoszeniach">Wyłącz zawsze wewnętrzne: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WylaczWewnetrzneOdp"> <span class="slider"></span></label></div>
-        <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio form-control" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px; color:white" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a></div>
+        <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio form-control" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a></div>
         `;
-
 
         var save = document.createElement('button');
         save.innerHTML = "Zapisz";
@@ -1225,6 +1224,8 @@
 
     (function(){
         $(document).ready(()=> {
+            let h = window.location.href.split("/");
+            if(h[3] !== "#"){h[3] = '#';window.location.replace(h.join('/'))}
             powiadomienie();
             createLayout();
             createSettings();
