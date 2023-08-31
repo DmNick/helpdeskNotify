@@ -28,7 +28,7 @@
         {
             "nazwa": "WERYFIKACJA DWUETAPOWA",
             "value": "Cześć, spowodowane jest to tym, że minął termin utworzenia weryfikacji dwuetapowej na Twoim koncie, spróbuj się teraz zalogować i wybrać opcję z logowaniem za pomocą 8-cyfrowego kodu.\nTwój kod to: \nPo zalogowaniu skonfiguruj weryfikację dwuetapową, instrukcję przesyłamy co jakiś czas mailowo, przesyłam również w załączniku. Daj znać czy się udało",
-            "zalacznik": "Jak_wlaczyc_weryfikacje_dwuetapowa.gif"
+            "zalacznik": "https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/gify/Jak_wlaczyc_weryfikacje_dwuetapowa.gif"
         },
         {
             "nazwa": "NAGRANIA Z KAMER",
