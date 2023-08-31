@@ -11,11 +11,11 @@
         },
         {
             "nazwa": "ZDALNE",
-            "value": "Dodatkowo proszę o wskazanie do kiedy dostęp ma być przyznany (data lub bezterminowo). Potrzebna jest również informacja z jakiego komputera będzie użytkownik będzie korzystał (prywatny lub służbowy)"
+            "value": "Dodatkowo proszę o wskazanie do kiedy dostęp ma być przyznany (data lub bezterminowo). Potrzebna jest również informacja z jakiego komputera użytkownik będzie będzie korzystał (prywatny lub służbowy)"
         },
         {
             "nazwa": "IMPULS HASŁO",
-            "value": "Cześć, hasło można zresetować samodzielnie (wraz z odblokowaniem konta) przez portal do wniosków urlopowych. \nhttps://portal.ekookna.net.pl/Portal/Account/LogOn \nPod przyciskiem \"zaloguj się\" jest \"odzyskaj hasło\". Wpisujesz maila i przyjdzie link z dalszymi instrukcjami. Daj znać czy się udało."
+            "value": "Cześć, hasło można zresetować samodzielnie (wraz z odblokowaniem konta) przez portal do wniosków urlopowych. \nhttps://portal.ekookna.net.pl/Portal/Account/LogOn \nPod przyciskiem \"zaloguj się\" jest \"odzyskaj hasło\". Wpisujesz maila na którego przyjdą dalsze instrukcje. Daj znać czy się udało."
         },
         {
             "nazwa": "WYGASŁO HASŁO",
@@ -54,7 +54,7 @@
         },
         {
             "nazwa": "ZAMYKANIE ZGŁOSZENIA",
-            "value": "Z powodu braku odpowiedzi zgłoszenie uznaje za zamknięte."
+            "value": "Z powodu braku odpowiedzi zgłoszenie uznaję za zamknięte."
         }
     ]
 }
