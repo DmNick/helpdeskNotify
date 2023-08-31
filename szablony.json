@@ -26,6 +26,11 @@
             "value": "Hej, dostęp został zresetowany. Proszę zalogować się tak samo jak za pierwszym razem. Proszę o informację czy problem został rozwiązany."
         },
         {
+            "nazwa": "WERYFIKACJA DWUETAPOWA",
+            "value": "Cześć, spowodowane jest to tym, że minął termin utworzenia weryfikacji dwuetapowej na Twoim koncie, spróbuj się teraz zalogować i wybrać opcję z logowaniem za pomocą 8-cyfrowego kodu.\nTwój kod to: \nPo zalogowaniu skonfiguruj weryfikację dwuetapową, instrukcję przesyłamy co jakiś czas mailowo, przesyłam również w załączniku. Daj znać czy się udało",
+            "zalacznik": "Jak_wlaczyc_weryfikacje_dwuetapowa.gif"
+        },
+        {
             "nazwa": "NAGRANIA Z KAMER",
             "value": "Cześć, dział IT nie zajmuje się zabezpieczaniem nagrań. Należy zgłosić taką potrzebę do jednej z tych osób: ochrona24, Dariusz Książek, Henryk Szczygieł. Zgłoszenie zamykam."
         },
