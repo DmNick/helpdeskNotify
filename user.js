@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.85
+// @version      0.98.86
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -12,6 +12,8 @@
 // @require      https://cdnjs.cloudflare.com/ajax/libs/printThis/1.15.0/printThis.js
 // @require      https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js
+// @require      https://unpkg.com/@popperjs/core@2
+// @require      https://unpkg.com/tippy.js@6
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAiJJREFUOE+Vk11Ik2EUx//Pq9t4xbWl9MaimhuIXWREVwXShTg/sPAmGrMmU1sXejEoyA0aJoqWedtNYYmzxL5wlOUHSRdB3teFCG4xa1rhaJhaNnfC593z1sUu5nNzzv9/zvmdhwceRkQM/awKCkagQEG2U5AxdZmYysRtgNEA6mDFKzp2GXT4FqDfk5WRzZSm8sDoOVbTpR1F6SM9OQ+KxvywDowmQFunv+9qswDo3xjA6Alos35j19t3BuS3BSrgZ+0aB+Q9qsN242sNJnSVy4+95kKcKC9FoM2p1QunjSog6fjBTf3QKWx53msNQjsuBDDzsA/XegdRbDaio+087zGNm8HoPijRsMoNOVSBTfc7DSB0rfs6JkPqI1e6/JgdvcnzovFiMLoN+tb0lRvG0EmQwaQB2O8k1txzqPd0YmKoi/vO9j6M3QnwXHm5H4z6QcsX4+qVxiqRdM5qAKHPtnbhxWAn92uagpga7ua5ZeSACvjsWlKv9NSBxLkZDSB0g7cb4XtB+G7cxdEyK7yuGt5zcPQQ2K8gaKX1kwqYbkai+sE/QEY3+gbAGEN1xXEErzQjFovxHuvjErB1P2jFu8gNm83GYzQahcVigSzLiEQisNvt3CciXts5UmoDJeFyFfClZUHbmmtiXhzGvg89cQ5Y8sznOgcptQ5T7BmUj70AwxmW9IGkfHVeEt/1P1z6D6AT3xmAwciLcUi4hKs0+RdlXsVylWyVrQAAAABJRU5ErkJggg==
 // @resource     IMPORTED_CSS https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css
 // @grant        GM_getResourceText
@@ -20,6 +22,7 @@
 // ==/UserScript==
 /* global $ */
 /* global Swal */
+/* global tippy */
 
 (function() {
     'use strict';
@@ -96,7 +99,7 @@
      top: 100%;
      width: 100%;
      height: 100%;
-     background-color: grey;
+     background-color: var(--primary-content-background);
      z-index: 1000;
      overflow-y: auto;
     }
@@ -137,12 +140,8 @@
      color:white;
     }
 
-    [ng-model='ticket.description'] > p > span {
-     color: #c6d0dc!important;
-    }
-
-    .theme-dark [ng-model='ticket.description'] * {
-     color: #c6d0dc!important;
+    [ng-model='ticket.description'] * {
+     color: var(--primary-label-color)!important;
     }
 
     #dzwieki > div > label:not(.switch),
@@ -179,13 +178,13 @@
      text-align: -webkit-center;
     }
 
-    .theme-dark #details-additional-fields input, .form-select {
+    #details-additional-fields input, .form-select {
      margin: 5px 5px;
      border-radius: 5px;
      border:1px;
      border-color: var(--primary-border-color);
      padding:5px;
-     background-color:var(--input-background);
+     background-color:var(--input-disabled-background);
      color:var(--secondary-font-color);
     }
 
@@ -548,6 +547,19 @@
 
     }
 
+    function WiecejWidokow(){
+        try {
+            //ifLoaded2(".filters-loaded").then((el)=>{
+                console.log("Wczytano filtry");
+                document.querySelector(".sidebar.table-filters-double .sidebar-overflow.small").style.maxHeight = "calc(90% - 40px)";
+            //});
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+
+
     function WylaczWewnetrzneOdp(){
         ifLoaded("[ng-model='comment.isInternal']").then(()=>{
             //console.log("wczytano slider");
@@ -692,6 +704,7 @@
                             check(this);
                             przelacznik();
                             refreshZegary();
+                            if(hasWiecejWidokow()){WiecejWidokow()};
                         }
                     };
                 }
@@ -949,6 +962,15 @@
             }
     }
 
+    function hasWiecejWidokow() {
+            if (localStorage.getItem("HP-WiecejWidokow") == 'true'){
+                return(true);
+            }
+            else {
+                return(false);
+            }
+    }
+
     function refresh10s(){
         if(document.querySelector("#layoutNotify.widoczne")){
             refreshList();
@@ -1017,7 +1039,10 @@
         <div><span title="Automatycznie uruchamia layout przy odswieżeniu strony">Auto uruchom layout: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-OpenLayout"> <span class="slider"></span></label></div>
         <div><span title="Etykietki na stronie ze skóconymi informacjami o zgłoszeniu">Drukowanie etykietek: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-PrintLayout"> <span class="slider"></span></label></div>
         <div><span title="Wyłącza domyślnie wewnętrzne odpowiedzi w zgłoszeniach">Wyłącz zawsze wewnętrzne: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WylaczWewnetrzneOdp"> <span class="slider"></span></label></div>
-        <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio form-control" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a></div>
+        <div><span title="Wiecej miejsca dla widoków">Wiecej widoków: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WiecejWidokow"> <span class="slider"></span></label></div>
+        <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio form-control" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a>
+        <a title="Stwórz własny json" style="margin:0 10px" target="_blank" href="https://dmnick.ovh/json_editor.html"> + </a>
+        </div>
         `;
 
         var save = document.createElement('button');
@@ -1087,8 +1112,31 @@
             }
             if(el.classList.contains('cbox')){
                 el.checked = localStorage.getItem(el.id)??'';
+                tippy(`div#dzwieki > div:has(input#${el.id})`, {
+                    content: `Wczytywanie..`,
+                    onShow(instance) {
+                        fetch(`https://dmnick.ovh/h/${el.id}.png`)
+                            .then((response) => response.blob())
+                            .then((blob) => {
+                            const url = URL.createObjectURL(blob);
+                            const image = new Image();
+                            image.style.display = 'block';
+                            image.style.maxHeight = "400px"
+                            image.src = url;
+                            instance.setContent(image);
+                        })
+                            .catch((error) => {
+                            instance.setContent(`Request failed. ${error}`);
+                        });
+                    },
+                });
+
             }
         });
+
+        //tippy('div#dzwieki > div:has(input#HP-OpenLayout)', {
+        //    content: 'My tooltip!',
+        //});
     }
 
     function openSettings(){
