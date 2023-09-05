@@ -425,7 +425,6 @@
     }
 
     function wezUrl(el){
-        console.log(el);
         switch(el){
             case('HP-OpenLayout'):
                 return '/v1/files/3c6404ee-445b-475a-a1d9-41b280622bd6/HP-OpenLayout.png';
