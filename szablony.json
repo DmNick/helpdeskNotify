@@ -14,6 +14,14 @@
             "value": "Dodatkowo proszę o wskazanie do kiedy dostęp ma być przyznany (data lub bezterminowo). Potrzebna jest również informacja z jakiego komputera użytkownik będzie będzie korzystał (prywatny lub służbowy)"
         },
         {
+            "nazwa": "ZDALNE PRYWATNY",
+            "value": "Cześć,\nodpowiednie uprawnienia do logowania zdalnego zostały nadane. Poniżej link do instrukcji instalacji połączenia zdalnego, w razie problemów na ostatniej stronie informacja w jaki sposób dział IT może udzielić pomocy.\n\nInstrukcja:\n<a href=\"https://docs.google.com/document/d/1nWQBCuYNgoEhxoys85HTEpXhiRk0m8iKX4dEzS9NyYg\">https://docs.google.com/document/d/1nWQBCuYNgoEhxoys85HTEpXhiRk0m8iKX4dEzS9NyYg</a>"
+        },
+        {
+            "nazwa": "ZDALNE SŁUŻBOWY",
+            "value": "Cześć,\nodpowiednie uprawnienia do logowania zdalnego zostały nadane. Poniżej link do instrukcji instalacji połączenia zdalnego, w razie problemów na ostatniej stronie informacja w jaki sposób dział IT może udzielić pomocy.\n\nInstrukcja:\n<a href=\"https://docs.google.com/document/d/1-9isFrlRYli2uilZsahKhf7425dm1kiAczTjWH1-jbo\">https://docs.google.com/document/d/1-9isFrlRYli2uilZsahKhf7425dm1kiAczTjWH1-jbo</a>"
+        },
+        {
             "nazwa": "IMPULS HASŁO",
             "value": "Cześć, hasło można zresetować samodzielnie (wraz z odblokowaniem konta) przez portal do wniosków urlopowych. \nhttps://portal.ekookna.net.pl/Portal/Account/LogOn \nPod przyciskiem \"zaloguj się\" jest \"odzyskaj hasło\". Wpisujesz maila na którego przyjdą dalsze instrukcje. Daj znać czy się udało."
         },
