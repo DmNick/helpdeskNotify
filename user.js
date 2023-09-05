@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.88
+// @version      0.98.86
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -421,6 +421,24 @@
         }
         catch(e) {
             console.log("błąd przy odtwarzaniu: "+e);
+        }
+    }
+
+    function wezUrl(el){
+        console.log(el);
+        switch(el){
+            case('HP-OpenLayout'):
+                return '/v1/files/3c6404ee-445b-475a-a1d9-41b280622bd6/HP-OpenLayout.png';
+                break;
+            case('HP-PrintLayout'):
+                return '/v1/files/6a9fe46b-0a7c-4b61-a73d-2581399411a4/HP-PrintLayout.png';
+                break;
+            case('HP-WylaczWewnetrzneOdp'):
+                return '/v1/files/08e9cab8-2339-45af-9e7c-b47bd35a54e4/HP-WylaczWewnetrzneOdp.png';
+                break;
+            case('HP-WiecejWidokow'):
+                return '/v1/files/47f01deb-260c-416b-a042-48e837dda97f/HP-WiecejWidokow.png';
+                break;
         }
     }
 
@@ -1127,7 +1145,8 @@
                 tippy(document.querySelector(`#${el.id}`).closest("div"), {
                     content: `Wczytywanie..`,
                     onShow(instance) {
-                        fetch(`https://dmnick.ovh/h/${el.id}.png`)
+                        let link = wezUrl(el.id);
+                        fetch(link)
                             .then((response) => response.blob())
                             .then((blob) => {
                             const url = URL.createObjectURL(blob);
