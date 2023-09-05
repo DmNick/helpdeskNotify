@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.86
+// @version      0.98.87
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -361,7 +361,7 @@
     async function audioAlert(type){
         let linkMp3 = 'https://dmnick.ovh/h/alert.mp3';
         let linkMp3Awaria = 'https://dmnick.ovh/h/awaria.mp3';
-        let linkMp3Przypomnienie = 'https://dmnick.ovh/h/widziszmnie.mp3';
+        let linkMp3Przypomnienie = localStorage.getItem("HP-Przypomnienie30minLink")??'https://dmnick.ovh/h/widziszmnie.mp3';
         let linkMp3Naklejka = 'https://dmnick.ovh/h/dobryprzekaznaklejka.mp3';
         let HPAudioNiski = localStorage.getItem("HP-AudioNiski")??null;
         let HPAudioWysoki = localStorage.getItem("HP-AudioWysoki")??null;
@@ -910,7 +910,7 @@
             } else if (minuty>30){
                 if(!el.closest(".card").classList.contains("warning") && hasAudio()===true){
                     console.log("przypomnienie");
-                    audioAlert('przypomnienie30min');
+                    if(hasPrzypomnienie30min()){audioAlert('przypomnienie30min')};
                 }
                 el.closest(".card").classList.add("warning");
             }
@@ -964,6 +964,15 @@
 
     function hasWiecejWidokow() {
             if (localStorage.getItem("HP-WiecejWidokow") == 'true'){
+                return(true);
+            }
+            else {
+                return(false);
+            }
+    }
+
+    function hasPrzypomnienie30min() {
+            if (localStorage.getItem("HP-Przypomnienie30min") == 'true'){
                 return(true);
             }
             else {
@@ -1036,6 +1045,7 @@
         <div><label for="HP-AudioKrytyczny">Krytyczny priorytet: </label><input class="audio form-control" type="text" placeholder="podaj link do .mp3" id="HP-AudioKrytyczny" /><button class="testMp3 btn">Test</button></div>
         <div><label for="HP-AudioBloker">Bloker priorytet: </label><input class="audio form-control" type="text" placeholder="podaj link do .mp3" id="HP-AudioBloker" /><button class="testMp3 btn">Test</button></div>
         <div><label for="HP-AudioAwaria">Awaria: </label><input class="audio form-control" type="text" placeholder="podaj link do .mp3" id="HP-AudioAwaria" /><button class="testMp3 btn">Test</button></div>
+        <div><span title="Przypomnienie po 30 minutach">Przypomnienie po 30min: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-Przypomnienie30min"> <span class="slider"></span></label><input class="audio form-control" type="text" placeholder="podaj link do .mp3" id="HP-Przypomnienie30minLink" style="width: 30%;"><button class="testMp3 btn">Test</button></div>
         <div><span title="Automatycznie uruchamia layout przy odswieżeniu strony">Auto uruchom layout: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-OpenLayout"> <span class="slider"></span></label></div>
         <div><span title="Etykietki na stronie ze skóconymi informacjami o zgłoszeniu">Drukowanie etykietek: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-PrintLayout"> <span class="slider"></span></label></div>
         <div><span title="Wyłącza domyślnie wewnętrzne odpowiedzi w zgłoszeniach">Wyłącz zawsze wewnętrzne: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WylaczWewnetrzneOdp"> <span class="slider"></span></label></div>
@@ -1112,7 +1122,9 @@
             }
             if(el.classList.contains('cbox')){
                 el.checked = localStorage.getItem(el.id)??'';
-                tippy(`div#dzwieki > div:has(input#${el.id})`, {
+                if(el.id == 'HP-Przypomnienie30min') return;
+                //tippy(`div#dzwieki > div:has(input#${el.id})`, {
+                tippy(document.querySelector(`#${el.id}`).closest("div"), {
                     content: `Wczytywanie..`,
                     onShow(instance) {
                         fetch(`https://dmnick.ovh/h/${el.id}.png`)
