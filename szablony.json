@@ -54,7 +54,11 @@
         {
             "nazwa": "AUTORESPONDER MAIL",
             "value": "Cześć, automatyczną odpowiedź możesz ustawić własnoręcznie, w załączniku przesyłam instrukcję.",
-            "zalacznik": "https://helpdesk/v1/files/f26dbfe6-29d9-4976-9893-7a1724efc7f9/Jak_ustawic_automatyczna_odpowiedz_email.gif?size=200x200"
+            "zalacznik": "https://helpdesk/v1/files/f26dbfe6-29d9-4976-9893-7a1724efc7f9/Jak_ustawic_automatyczna_odpowiedz_email.gif"
+        },
+        {
+            "nazwa":"DODANIE DRUKARKI",
+            "value":"Drukarka dodana, puściłem stronę testową. Gdyby nie było widać drukarki przy wydruku, proszę o ponowne uruchomienie programu i wybór odpowiedniej z listy. Proszę o odpowiedź zwrotną czy działa"
         },
         {
             "nazwa": "GOTOWE ZGŁOSZENIE",
