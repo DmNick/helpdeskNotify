@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.89
+// @version      0.98.90
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -361,13 +361,14 @@
     async function audioAlert(type){
         let linkMp3 = 'https://dmnick.ovh/h/alert.mp3';
         let linkMp3Awaria = 'https://dmnick.ovh/h/awaria.mp3';
-        let linkMp3Przypomnienie = localStorage.getItem("HP-Przypomnienie30minLink")??'https://dmnick.ovh/h/widziszmnie.mp3';
+        let linkMp3Przypomnienie = 'https://dmnick.ovh/h/widziszmnie.mp3';
         let linkMp3Naklejka = 'https://dmnick.ovh/h/dobryprzekaznaklejka.mp3';
         let HPAudioNiski = localStorage.getItem("HP-AudioNiski")??null;
         let HPAudioWysoki = localStorage.getItem("HP-AudioWysoki")??null;
         let HPAudioKrytyczny = localStorage.getItem("HP-AudioKrytyczny")??null;
         let HPAudioBloker = localStorage.getItem("HP-AudioBloker")??null;
         let HPAudioAwaria = localStorage.getItem("HP-AudioAwaria")??null;
+        let HPPrzypomnienie30minLink = localStorage.getItem("HP-Przypomnienie30minLink")??null;
         switch(type){
             case('Niski'):
                 if(HPAudioNiski && HPAudioNiski !== ''){
@@ -398,7 +399,12 @@
                 }
                 break;
             case('przypomnienie30min'):
-                linkMp3 = linkMp3Przypomnienie;
+                if(HPPrzypomnienie30minLink && HPPrzypomnienie30minLink !==''){
+                    linkMp3 = HPPrzypomnienie30minLink;
+                }
+                else {
+                    linkMp3 = linkMp3Przypomnienie;
+                }
                 break;
             case('naklejka'):
                 linkMp3 = linkMp3Naklejka;
