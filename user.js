@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.90
+// @version      0.98.91
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -358,6 +358,27 @@
 
     });
 
+    let ifLoaded3 = async (el) => new Promise((myResolve,myReject) => {
+        var x = 0;
+        //console.log(this);
+        var tid = setInterval(()=>{
+            //console.log("wczytywanie "+div);
+            //console.log($(div));
+            if (el !== null) {
+                clearInterval(tid);
+                //console.log(x);
+                myResolve(true);
+            }
+            if (x > 40){
+                clearInterval(tid);
+                console.log("Przekroczono limit czasu dla obiektu");
+                myReject(false);
+            }
+            x++;
+        }, 500);
+
+    });
+
     async function audioAlert(type){
         let linkMp3 = 'https://dmnick.ovh/h/alert.mp3';
         let linkMp3Awaria = 'https://dmnick.ovh/h/awaria.mp3';
@@ -570,6 +591,48 @@
 
     }
 
+    function przypiszMnie(id){
+        let x = document.createElement("a");
+        x.style.marginLeft = "4px";
+        x.classList.add('przypiszMnie');
+        if(document.querySelector(".przypiszMnie") == null){
+            let user = document.querySelector(".user-name > span > span > span").innerHTML;
+            let userSearch = user.replaceAll(" ","+");
+            x.innerHTML = `<i class="icon-hdicon-HD_all_event-new-user align-middle"></i>`;
+            document.querySelector("#details-users > div:nth-child(4)").append(x);
+            x.addEventListener("click",()=>{
+                ifLoaded3(localStorage.getItem('HP-Token')).then((el)=>{
+                    fetch(`https://helpdesk/v1/users/?filter=%7B%22roles%22:%5B%22admin%22,%22agent%22%5D,%22search%22:%7B%22Fields%22:%7B%22fullName%22:%22${userSearch}%22,%22userName%22:%22${userSearch}%22%7D%7D,%22activated%22:true%7D&limit=20&offset=0&search=${userSearch}`, {
+                        headers: {
+                            Authorization: localStorage.getItem('HP-Token')
+                        }
+                    })
+                        .then(resp => resp.json())
+                        .then(json => {
+                        console.log(json.items[0].id);
+                        var newOption = new Option(user,json.items[0].id,!0,!0)
+                        document.querySelector("#details-users [ax-select-model='ticket.assignee']  select").append(newOption);
+                        document.querySelector("#details-users [ax-select-model='ticket.assignee']  select").dispatchEvent(new Event("change"));
+                        if(id){
+                            fetch(`https://helpdesk/v1/tickets/${id}`,{
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: localStorage.getItem('HP-Token')
+                                },
+                                body: JSON.stringify({assigneeId: ""+json.items[0].id+""})
+                            });
+                        }
+
+                    })
+                        .catch( error => console.error(error));
+                });
+
+                //$("#selectSzablony > select").select2();
+            });
+        }
+    }
+
     function WiecejWidokow(){
         try {
             //ifLoaded2(".filters-loaded").then((el)=>{
@@ -732,14 +795,22 @@
                     };
                 }
                 if(url.indexOf("tickets/") > -1 && this.responseURL.split("/").length == '6' && window.location.href.indexOf('helpdesk/details/') > -1){
+                    var sentHeaders = {}
+                    var originalXMLHttpRequest_setRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+
+                    XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+                        sentHeaders[header] = value;
+                        if(header == 'Authorization'){localStorage.setItem('HP-Token',value)}
+                        originalXMLHttpRequest_setRequestHeader.call(this, header, value);
+                    }
                     if (this.readyState == 4) {
                         if (this.status == 200){
-                            //console.log(this.responseURL.split("/"));
-                            //console.log(this);
                             if(hasPrintLayout()){createPrintLayout(this)};
                             wczytajSzablony();
                             dodajIZakoncz();
                             if(hasWylaczWewnetrzneOdp()){WylaczWewnetrzneOdp()};
+                            przypiszMnie(JSON.parse(this.response).id);
+                            //console.log(JSON.parse(this.response).id);
                         }
                     }
                 }
