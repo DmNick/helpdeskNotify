@@ -61,6 +61,10 @@
             "value":"Drukarka dodana, puściłem stronę testową. Gdyby nie było widać drukarki przy wydruku, proszę o ponowne uruchomienie programu i wybór odpowiedniej z listy. Daj znać czy działa"
         },
         {
+            "nazwa":"POBIERANIE PLIKÓW",
+            "value":"Cześć, pliki zostały pobrane i umieszczone w Twoich dokumentach na komputerze, sprawdź czy wszystko jest okej i daj znać"
+        },
+        {
             "nazwa": "GOTOWE ZGŁOSZENIE",
             "value": "Gotowe. Zgłoszenie zamykam."
         },
