@@ -65,6 +65,10 @@
             "value":"Cześć, pliki zostały pobrane i umieszczone w Twoich dokumentach na komputerze, sprawdź czy wszystko jest okej i daj znać"
         },
         {
+            "nazwa":"UZASADNIENIE ZAPOTRZEBOWANIA",
+            "value":"Zgodnie z wytycznymi ustalonymi przez zarząd proszę przełożonego o weryfikację, czy takie słuchawki są niezbędne do pracy. Jeśli tak to proszę o potwierdzenie oraz o przesłanie szczegółowego uzasadnienia takiego zapotrzebowania lub informację o rezygnacji."
+        },
+        {
             "nazwa": "GOTOWE ZGŁOSZENIE",
             "value": "Gotowe. Zgłoszenie zamykam."
         },
