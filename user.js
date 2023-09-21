@@ -652,7 +652,7 @@
                     })
                         .then(resp => resp.json())
                         .then(json => {
-                        console.log("Moje id = "+json.items[0].id);
+                        //console.log("Moje id = "+json.items[0].id);
 
                         if(id){
                             fetch(`https://helpdesk/v1/tickets/${id}/watchers`,{
