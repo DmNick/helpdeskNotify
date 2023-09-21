@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.91
+// @version      0.98.92
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -633,6 +633,71 @@
         }
     }
 
+    function odobserujMnie(id){
+        let x = document.createElement("a");
+        x.style.marginLeft = "4px";
+        x.classList.add('odobserujMnie');
+        x.style.display = "flex";
+        if(document.querySelector(".odobserujMnie") == null){
+            let user = document.querySelector(".user-name > span > span > span").innerHTML;
+            let userSearch = user.replaceAll(" ","+");
+            x.innerHTML = `<i class="icon-hdicon-HD_all_event-user-leave"></i>`;
+            document.querySelector("#details-users > div:nth-child(5)").append(x);
+            x.addEventListener("click",()=>{
+                ifLoaded3(localStorage.getItem('HP-Token')).then((el)=>{
+                    fetch(`https://helpdesk/v1/users/?filter=%7B%22roles%22:%5B%22admin%22,%22agent%22%5D,%22search%22:%7B%22Fields%22:%7B%22fullName%22:%22${userSearch}%22,%22userName%22:%22${userSearch}%22%7D%7D,%22activated%22:true%7D&limit=20&offset=0&search=${userSearch}`, {
+                        headers: {
+                            Authorization: localStorage.getItem('HP-Token')
+                        }
+                    })
+                        .then(resp => resp.json())
+                        .then(json => {
+                        console.log("Moje id = "+json.items[0].id);
+
+                        if(id){
+                            fetch(`https://helpdesk/v1/tickets/${id}/watchers`,{
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: localStorage.getItem('HP-Token')
+                                }
+                            }).then(el=> el.json()).then(el=>{
+                                //console.log(el);
+                                if(el.total > 0){
+                                    let watchers = [];
+                                    let watchersInclude = [];
+                                    el.items.forEach(e=>{
+                                        watchersInclude.push(e.id);
+                                        if(json.items[0].id !== e.id){
+                                            watchers.push(e.id);
+                                        }
+                                    });
+                                    if(!watchersInclude.includes(json.items[0].id)){
+                                        watchers.push(json.items[0].id);
+                                    }
+                                    //console.log(watchers);
+
+                                    fetch(`https://helpdesk/v1/tickets/${id}/watchers`,{
+                                        method: 'PUT',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            Authorization: localStorage.getItem('HP-Token')
+                                        },
+                                        body: "["+watchers+"]"
+                                    });
+                                }
+                            });
+                        }
+
+                    })
+                        .catch( error => console.error(error));
+                });
+
+                //$("#selectSzablony > select").select2();
+            });
+        }
+    }
+
     function WiecejWidokow(){
         try {
             //ifLoaded2(".filters-loaded").then((el)=>{
@@ -810,7 +875,8 @@
                             dodajIZakoncz();
                             if(hasWylaczWewnetrzneOdp()){WylaczWewnetrzneOdp()};
                             przypiszMnie(JSON.parse(this.response).id);
-                            //console.log(JSON.parse(this.response).id);
+                            odobserujMnie(JSON.parse(this.response).id);
+                            console.log(JSON.parse(this.response));
                         }
                     }
                 }
