@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.93
+// @version      0.98.94
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -12,10 +12,11 @@
 // @require      https://cdnjs.cloudflare.com/ajax/libs/printThis/1.15.0/printThis.js
 // @require      https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js
-// @require      https://unpkg.com/@popperjs/core@2
-// @require      https://unpkg.com/tippy.js@6
+// @require      https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js
+// @require      https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js
 // @require      https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js
 // @require      https://raw.githubusercontent.com/ejci/favico.js/master/favico-0.3.10.min.js
+// @connect      https://raw.githubusercontent.com/DmNick/*
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAiJJREFUOE+Vk11Ik2EUx//Pq9t4xbWl9MaimhuIXWREVwXShTg/sPAmGrMmU1sXejEoyA0aJoqWedtNYYmzxL5wlOUHSRdB3teFCG4xa1rhaJhaNnfC593z1sUu5nNzzv9/zvmdhwceRkQM/awKCkagQEG2U5AxdZmYysRtgNEA6mDFKzp2GXT4FqDfk5WRzZSm8sDoOVbTpR1F6SM9OQ+KxvywDowmQFunv+9qswDo3xjA6Alos35j19t3BuS3BSrgZ+0aB+Q9qsN242sNJnSVy4+95kKcKC9FoM2p1QunjSog6fjBTf3QKWx53msNQjsuBDDzsA/XegdRbDaio+087zGNm8HoPijRsMoNOVSBTfc7DSB0rfs6JkPqI1e6/JgdvcnzovFiMLoN+tb0lRvG0EmQwaQB2O8k1txzqPd0YmKoi/vO9j6M3QnwXHm5H4z6QcsX4+qVxiqRdM5qAKHPtnbhxWAn92uagpga7ua5ZeSACvjsWlKv9NSBxLkZDSB0g7cb4XtB+G7cxdEyK7yuGt5zcPQQ2K8gaKX1kwqYbkai+sE/QEY3+gbAGEN1xXEErzQjFovxHuvjErB1P2jFu8gNm83GYzQahcVigSzLiEQisNvt3CciXts5UmoDJeFyFfClZUHbmmtiXhzGvg89cQ5Y8sznOgcptQ5T7BmUj70AwxmW9IGkfHVeEt/1P1z6D6AT3xmAwciLcUi4hKs0+RdlXsVylWyVrQAAAABJRU5ErkJggg==
 // @resource     IMPORTED_CSS https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css
 // @grant        GM_getResourceText
@@ -381,10 +382,10 @@
     });
 
     async function audioAlert(type){
-        let linkMp3 = 'https://dmnick.ovh/h/alert.mp3';
-        let linkMp3Awaria = 'https://dmnick.ovh/h/awaria.mp3';
-        let linkMp3Przypomnienie = 'https://dmnick.ovh/h/widziszmnie.mp3';
-        let linkMp3Naklejka = 'https://dmnick.ovh/h/dobryprzekaznaklejka.mp3';
+        let linkMp3 = 'https://helpdesk/v1/files/15b6afcb-ca5f-425a-ac8d-807906095102/alert.mp3'; //'https://dmnick.ovh/h/alert.mp3';
+        let linkMp3Awaria = 'https://helpdesk/v1/files/de116302-2a55-4a16-9afd-08af209b4077/awaria.mp3'; //'https://dmnick.ovh/h/awaria.mp3';
+        let linkMp3Przypomnienie = 'https://helpdesk/v1/files/02a0a1f4-f3f2-4adb-9eed-d8070709d5aa/widziszmnie.mp3'; //'https://dmnick.ovh/h/widziszmnie.mp3';
+        let linkMp3Naklejka = 'https://helpdesk/v1/files/1bbba69a-a769-4cac-b31a-aee9c16bac3b/dobryprzekaznaklejka.mp3'; //'https://dmnick.ovh/h/dobryprzekaznaklejka.mp3';
         let HPAudioNiski = localStorage.getItem("HP-AudioNiski")??null;
         let HPAudioWysoki = localStorage.getItem("HP-AudioWysoki")??null;
         let HPAudioKrytyczny = localStorage.getItem("HP-AudioKrytyczny")??null;
@@ -1079,7 +1080,7 @@
     }
 
     function display(x,type){
-        if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://dmnick.ovh/h/icon.png');}
+        if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://helpdesk/v1/files/10200197-1845-4248-b26a-d5dd53cec7dd/icon.png');}
         if(hasAudio()===true){
             audioAlert(type);
 
@@ -1286,23 +1287,27 @@
                 if(el.id == 'HP-Przypomnienie30min') return;
                 //tippy(`div#dzwieki > div:has(input#${el.id})`, {
                 tippy(document.querySelector(`#${el.id}`).closest("div"), {
-                    content: `Wczytywanie..`,
-                    onShow(instance) {
+                    content(reference){
                         let link = wezUrl(el.id);
-                        fetch(link)
-                            .then((response) => response.blob())
-                            .then((blob) => {
-                            const url = URL.createObjectURL(blob);
-                            const image = new Image();
-                            image.style.display = 'block';
-                            image.style.maxHeight = "400px"
-                            image.src = url;
-                            instance.setContent(image);
-                        })
-                            .catch((error) => {
-                            instance.setContent(`Request failed. ${error}`);
-                        });
+                        return `<img src='${link}' style='display:block;max-height:400px'>`
                     },
+                    allowHTML: true,
+                    //onShow(instance) {
+                    //    let link = wezUrl(el.id);
+                    //    fetch(link)
+                    //        .then((response) => response.blob())
+                    //        .then((blob) => {
+                    //        const url = URL.createObjectURL(blob);
+                    //        const image = new Image();
+                    //        image.style.display = 'block';
+                    //        image.style.maxHeight = "400px"
+                    //        image.src = url;
+                    //        instance.setContent(image);
+                    //    })
+                    //        .catch((error) => {
+                    //        instance.setContent(`Request failed. ${error}`);
+                    //    });
+                    //},
                 });
 
             }
