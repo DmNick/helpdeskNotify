@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.92
+// @version      0.98.93
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -14,15 +14,16 @@
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js
 // @require      https://unpkg.com/@popperjs/core@2
 // @require      https://unpkg.com/tippy.js@6
+// @require      https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js
+// @require      https://raw.githubusercontent.com/ejci/favico.js/master/favico-0.3.10.min.js
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAiJJREFUOE+Vk11Ik2EUx//Pq9t4xbWl9MaimhuIXWREVwXShTg/sPAmGrMmU1sXejEoyA0aJoqWedtNYYmzxL5wlOUHSRdB3teFCG4xa1rhaJhaNnfC593z1sUu5nNzzv9/zvmdhwceRkQM/awKCkagQEG2U5AxdZmYysRtgNEA6mDFKzp2GXT4FqDfk5WRzZSm8sDoOVbTpR1F6SM9OQ+KxvywDowmQFunv+9qswDo3xjA6Alos35j19t3BuS3BSrgZ+0aB+Q9qsN242sNJnSVy4+95kKcKC9FoM2p1QunjSog6fjBTf3QKWx53msNQjsuBDDzsA/XegdRbDaio+087zGNm8HoPijRsMoNOVSBTfc7DSB0rfs6JkPqI1e6/JgdvcnzovFiMLoN+tb0lRvG0EmQwaQB2O8k1txzqPd0YmKoi/vO9j6M3QnwXHm5H4z6QcsX4+qVxiqRdM5qAKHPtnbhxWAn92uagpga7ua5ZeSACvjsWlKv9NSBxLkZDSB0g7cb4XtB+G7cxdEyK7yuGt5zcPQQ2K8gaKX1kwqYbkai+sE/QEY3+gbAGEN1xXEErzQjFovxHuvjErB1P2jFu8gNm83GYzQahcVigSzLiEQisNvt3CciXts5UmoDJeFyFfClZUHbmmtiXhzGvg89cQ5Y8sznOgcptQ5T7BmUj70AwxmW9IGkfHVeEt/1P1z6D6AT3xmAwciLcUi4hKs0+RdlXsVylWyVrQAAAABJRU5ErkJggg==
 // @resource     IMPORTED_CSS https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css
 // @grant        GM_getResourceText
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
-/* global $ */
-/* global Swal */
-/* global tippy */
+/* global $ Swal tippy Favico dayjs */
+
 
 (function() {
     'use strict';
@@ -652,10 +653,10 @@
                     })
                         .then(resp => resp.json())
                         .then(json => {
-                        //console.log("Moje id = "+json.items[0].id);
+                        console.log("Moje id = "+json.items[0].id);
 
                         if(id){
-                            fetch(`https://helpdesk/v1/tickets/${id}/watchers`,{
+                            fetch(`https://helpdesk/v1/tickets/${id}/watchers?limit=false`,{
                                 method: 'GET',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -1426,6 +1427,10 @@
             });
         }
         sessionStorage.setItem("HP-aktywne", JSON.stringify(nowyArray));
+        //console.log("stare: "+JSON.parse(sessionStorage.getItem("HP-aktywne")).length+" nowe: "+nowyArray.length);
+        //if(JSON.parse(sessionStorage.getItem("HP-aktywne")).length !== nowyArray.length){favicon.badge(nowyArray.length)}
+        favicon.badge(nowyArray.length);
+
         staryArray.forEach((el,index)=>{
             if(nowyArray.includes(el)===false){delAlertOnLayout(el);console.log("usunięto: "+el);}
         });
@@ -1434,14 +1439,21 @@
         //                        if(staryArray.includes(el)===false){console.log("dodano: "+el);}
         //                      });
         if(staryArray.length != nowyArray.length){console.log("Różnica!!!");}
-        console.log("Ostatni refresh: "+new Date());
+        //console.log("Ostatni refresh: "+new Date());
+        console.log("Ostatni refresh: "+dayjs(new Date()).format('HH:mm:ss'));
 
         if(x>0){
             display(x, type);
         }
     }
 
-
+    var favicon=new Favico({
+        //animation:'slide',
+        animation:'none',
+        bgColor : '#FF00FF',
+        //bgColor : '#5CB85C',
+        textColor : '#ff0'
+    });
 
     (function(){
         $(document).ready(()=> {
@@ -1455,7 +1467,6 @@
             if(localStorage.getItem("HP-OpenLayout")=='true'){
                 openLayout();
             }
-
         });
     })();
 
