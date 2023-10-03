@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.94
+// @version      0.98.95
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -847,50 +847,6 @@
         });
     }
 
-    function powiadomienie() {
-        var origOpen = XMLHttpRequest.prototype.open;
-        XMLHttpRequest.prototype.open = function(method, url) {
-            this.addEventListener('load', function() {
-                if(url.indexOf("tickets?") > -1 && window.location.href.split('?')[0] == 'https://helpdesk/#/helpdesk'){
-                    if (this.readyState == 4) {
-                        if (this.status == 200){
-                            check(this);
-                            przelacznik();
-                            refreshZegary();
-                            if(hasWiecejWidokow()){WiecejWidokow()};
-                        }
-                    };
-                }
-                if(url.indexOf("tickets/") > -1 && this.responseURL.split("/").length == '6' && window.location.href.indexOf('helpdesk/details/') > -1){
-                    var sentHeaders = {}
-                    var originalXMLHttpRequest_setRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
-
-                    XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
-                        sentHeaders[header] = value;
-                        if(header == 'Authorization'){localStorage.setItem('HP-Token',value)}
-                        originalXMLHttpRequest_setRequestHeader.call(this, header, value);
-                    }
-                    if (this.readyState == 4) {
-                        if (this.status == 200){
-                            if(hasPrintLayout()){createPrintLayout(this)};
-                            wczytajSzablony();
-                            dodajIZakoncz();
-                            if(hasWylaczWewnetrzneOdp()){WylaczWewnetrzneOdp()};
-                            przypiszMnie(JSON.parse(this.response).id);
-                            odobserujMnie(JSON.parse(this.response).id);
-                            console.log(JSON.parse(this.response));
-                        }
-                    }
-                }
-            });
-
-            this.addEventListener('error', function() {
-                console.log('XHR errored out', method, url);
-            });
-            origOpen.apply(this, arguments);
-        };
-    };
-
     function printLayout(){
         let naklejka = document.querySelector("#naklejka");
         let printOpis = document.querySelector("#printOpis");
@@ -1060,6 +1016,165 @@
             }
         }
 
+    }
+
+    function editSubject(id){
+
+        ifLoaded2(".one-line.element__events").then((el)=>{
+            if(document.querySelector("#editSubject") == null){
+                function changeSubject(nowaNazwa){
+                    //console.log(nowaNazwa);
+                    fetch(`https://helpdesk/v1/tickets/${id}`,{
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: localStorage.getItem('HP-Token')
+                        },
+                        body: JSON.stringify({subject: ""+nowaNazwa+""})
+                    }).then(el=>el.json()).then(el=>{
+                        //console.log(el);
+                        document.querySelector("[ax-ellipsis='ticket.subject'] > span").innerHTML = nowaNazwa;
+                    });
+                }
+
+                //console.log("wczytano edit");
+                let div = document.createElement("div");
+                div.id = "editSubject";
+                document.querySelector(".one-line.element__events").appendChild(div);
+                let before = document.createElement("select");
+                before.classList.add("beforeSubject","form-select");
+                div.appendChild(before);
+
+                let after = document.createElement("select");
+                after.classList.add("afterSubject","form-select");
+                div.appendChild(after);
+
+                var beforeArray = [], afterArray = [];
+                if(!localStorage.getItem("HP-BeforeSubject") || localStorage.getItem("HP-BeforeSubject") == null || localStorage.getItem("HP-BeforeSubject") == ''){
+                    localStorage.setItem("HP-BeforeSubject",JSON.stringify(['Dodaj wybór','Usuń wybór','Z1','Z2','Z3','Z4','Z5','Z6','Z7','Z8','MWS','MWG']));
+                }
+                if(!localStorage.getItem("HP-AfterSubject") || localStorage.getItem("HP-AfterSubject") == null || localStorage.getItem("HP-AfterSubject") == ''){
+                    localStorage.setItem("HP-AfterSubject",JSON.stringify(['Dodaj wybór','Usuń wybór','Laptop','Terminal','Monitor','Drukarka']));
+                }
+
+
+                function loadArrays(){
+                    beforeArray = JSON.parse(localStorage.getItem("HP-BeforeSubject"))??[];
+                    afterArray = JSON.parse(localStorage.getItem("HP-AfterSubject"))??[];
+
+                    let staraNazwa = document.querySelector("[ax-ellipsis='ticket.subject'] > span").innerHTML;
+
+                    before.innerHTML = `<option selected disabled>Przed</option>`;
+                    beforeArray.forEach((el,index) => {
+                        if(staraNazwa.toUpperCase().includes("["+el.toUpperCase()+"]")){
+                            before.innerHTML += `<option selected>${el}</option>`;
+                            before[index+1].disabled = true;
+                        }
+                        else {
+                            before.innerHTML += `<option>${el}</option>`;
+                        }
+                    });
+
+                    after.innerHTML = `<option disabled selected>Po</option>`;
+                    afterArray.forEach((el,index) => {
+                        if(staraNazwa.toUpperCase().includes("["+el.toUpperCase()+"]")){
+                            after.innerHTML += `<option selected>${el}</option>`;
+                            after[index+1].disabled = true;
+                        }
+                        else {
+                            after.innerHTML += `<option>${el}</option>`;
+                        }
+                    });
+                }
+                loadArrays();
+
+
+
+                before.addEventListener("change",(el)=>{
+                    if(/*el.target.selectedIndex === 1 || */el.target.value == "Dodaj wybór"){
+                        before.selectedIndex = 0;
+                        let newBefore = prompt("Dodaj opcję do 'Przed': ");
+
+                        if (newBefore != null) {
+                            beforeArray.push(newBefore);
+                            localStorage.setItem("HP-BeforeSubject",JSON.stringify(beforeArray));
+                            loadArrays();
+                        }
+                        return false;
+                    }
+                    if(el.target.value == "Usuń wybór"){
+                        before.selectedIndex = 0;
+                        let delBefore = prompt("Usuń opcję z 'Przed': ");
+                        if(delBefore != null){
+                            beforeArray = beforeArray.filter(function (letter) {
+                                return letter !== delBefore;
+                            });
+                            localStorage.setItem("HP-BeforeSubject",JSON.stringify(beforeArray));
+                            loadArrays();
+                        }
+                        return false;
+                    }
+
+                    let staraNazwa = document.querySelector("[ax-ellipsis='ticket.subject'] > span").innerHTML;
+                    let nowaNazwa;
+
+                    beforeArray.forEach((data,index) => {
+                        if(staraNazwa.toUpperCase().includes("["+data.toUpperCase()+"]")){
+                            let regexObj = new RegExp("\\["+data+"\\]","gi");
+                            nowaNazwa = staraNazwa.replaceAll(regexObj,"["+el.target.value+"]");
+                        }
+                        else if (nowaNazwa == '' || nowaNazwa == undefined || nowaNazwa == null){
+                            nowaNazwa = "["+el.target.value+"] "+staraNazwa;
+                        }
+                        if(index!==0){before[index+1].disabled = false;}
+                    });
+                    before[before.selectedIndex].disabled = true;
+                    changeSubject(nowaNazwa);
+                });
+
+                after.addEventListener("change",(el)=>{
+                    if(/*el.target.selectedIndex === 1 || */el.target.value == "Dodaj wybór"){
+                        after.selectedIndex = 0;
+                        let newAfter = prompt("Dodaj opcję do 'Po': ");
+
+                        if (newAfter != null) {
+                            afterArray.push(newAfter);
+                            localStorage.setItem("HP-AfterSubject",JSON.stringify(afterArray));
+                            loadArrays();
+                        }
+                        return false;
+                    }
+                    if(el.target.value == "Usuń wybór"){
+                        after.selectedIndex = 0;
+                        let delAfter = prompt("Usuń opcję z 'Przed': ");
+                        if(delAfter != null){
+                            afterArray = afterArray.filter(function (letter) {
+                                return letter !== delAfter;
+                            });
+                            localStorage.setItem("HP-AfterSubject",JSON.stringify(afterArray));
+                            loadArrays();
+                        }
+                        return false;
+                    }
+
+                    let staraNazwa = document.querySelector("[ax-ellipsis='ticket.subject'] > span").innerHTML;
+                    let nowaNazwa;
+
+                    afterArray.forEach((data,index) => {
+                        if(staraNazwa.toUpperCase().includes("["+data.toUpperCase()+"]")){
+                            let regexObj = new RegExp("\\["+data+"\\]","gi");
+                            nowaNazwa = staraNazwa.replaceAll(regexObj,"["+el.target.value+"]");
+                        }
+                        else if (nowaNazwa == '' || nowaNazwa == undefined || nowaNazwa == null){
+                            nowaNazwa = staraNazwa+" ["+el.target.value+"]";
+                        }
+                        if(index!=0){after[index+1].disabled = false;}
+                    });
+                    after[after.selectedIndex].disabled = true;
+                    changeSubject(nowaNazwa);
+                });
+            }
+        });
     }
 
     function refreshZegary(){
@@ -1292,6 +1407,7 @@
                         return `<img src='${link}' style='display:block;max-height:400px'>`
                     },
                     allowHTML: true,
+                    placement: 'right',
                     //onShow(instance) {
                     //    let link = wezUrl(el.id);
                     //    fetch(link)
@@ -1460,11 +1576,56 @@
         textColor : '#ff0'
     });
 
+    function init() {
+        var origOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url) {
+            this.addEventListener('load', function() {
+                if(url.indexOf("tickets?") > -1 && window.location.href.split('?')[0] == 'https://helpdesk/#/helpdesk'){
+                    if (this.readyState == 4) {
+                        if (this.status == 200){
+                            check(this);
+                            przelacznik();
+                            refreshZegary();
+                            if(hasWiecejWidokow()){WiecejWidokow()};
+                        }
+                    };
+                }
+                if(url.indexOf("tickets/") > -1 && this.responseURL.split("/").length == '6' && window.location.href.indexOf('helpdesk/details/') > -1){
+                    var sentHeaders = {}
+                    var originalXMLHttpRequest_setRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+
+                    XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+                        sentHeaders[header] = value;
+                        if(header == 'Authorization'){localStorage.setItem('HP-Token',value)}
+                        originalXMLHttpRequest_setRequestHeader.call(this, header, value);
+                    }
+                    if (this.readyState == 4) {
+                        if (this.status == 200){
+                            if(hasPrintLayout()){createPrintLayout(this)};
+                            wczytajSzablony();
+                            dodajIZakoncz();
+                            if(hasWylaczWewnetrzneOdp()){WylaczWewnetrzneOdp()};
+                            editSubject(JSON.parse(this.response).id);
+                            przypiszMnie(JSON.parse(this.response).id);
+                            odobserujMnie(JSON.parse(this.response).id);
+                            console.log(JSON.parse(this.response));
+                        }
+                    }
+                }
+            });
+
+            this.addEventListener('error', function() {
+                console.log('XHR errored out', method, url);
+            });
+            origOpen.apply(this, arguments);
+        };
+    };
+
     (function(){
         $(document).ready(()=> {
             let h = window.location.href.split("/");
             if(h[3] !== "#"){h[3] = '#';window.location.replace(h.join('/'))}
-            powiadomienie();
+            init();
             createLayout();
             createSettings();
             sessionStorage.clear("HP-aktywne");
