@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.96
+// @version      0.98.97
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -248,8 +248,15 @@
       width: 100%;
       display: block;
       margin-bottom: 20px;
+      }
      }
-    }
+
+    @media screen and (max-width: 1300px) {
+     #page-heading > div > h1:first-child,
+     #page-heading > div > .number {
+      display:none;
+      }
+     }
 
     @-webkit-keyframes move {
      0% {
@@ -489,7 +496,7 @@
           <sup>${xjson.status} - ${xjson.category.name} - ${xjson.priority.name}</sup>
           <h1>${xjson.subject} (${xjson.displayId})</h1>
           <h3>${bezParagrafu(xjson.description)}</h3>
-          <h3>~${xjson.creatorUser.fullName}</h3>
+          <h3>~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
           <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
         `].join('');
         switch(xjson.priority.name){
@@ -604,25 +611,26 @@
             document.querySelector("#details-users > div:nth-child(4)").append(x);
             x.addEventListener("click",()=>{
                 ifLoaded3(localStorage.getItem('HP-Token')).then((el)=>{
-                    fetch(`https://helpdesk/v1/users/?filter=%7B%22roles%22:%5B%22admin%22,%22agent%22%5D,%22search%22:%7B%22Fields%22:%7B%22fullName%22:%22${userSearch}%22,%22userName%22:%22${userSearch}%22%7D%7D,%22activated%22:true%7D&limit=20&offset=0&search=${userSearch}`, {
+                    fetch(`https://helpdesk/v1/users/me`, {
                         headers: {
                             Authorization: localStorage.getItem('HP-Token')
                         }
                     })
                         .then(resp => resp.json())
-                        .then(json => {
-                        console.log(json.items[0].id);
-                        var newOption = new Option(user,json.items[0].id,!0,!0)
-                        document.querySelector("#details-users [ax-select-model='ticket.assignee']  select").append(newOption);
-                        document.querySelector("#details-users [ax-select-model='ticket.assignee']  select").dispatchEvent(new Event("change"));
-                        if(id){
-                            fetch(`https://helpdesk/v1/tickets/${id}`,{
+                        .then(async json => {
+                        console.log(json.id);
+                        let noweId = await getIdSubject()??id;
+                        var newOption = new Option(user,json.id,!0,!0)
+                        //document.querySelector("#details-users [ax-select-model='ticket.assignee']  select").append(newOption);
+                        //document.querySelector("#details-users [ax-select-model='ticket.assignee']  select").dispatchEvent(new Event("change"));
+                        if(noweId){
+                            fetch(`https://helpdesk/v1/tickets/${noweId}`,{
                                 method: 'PUT',
                                 headers: {
                                     'Content-Type': 'application/json',
                                     Authorization: localStorage.getItem('HP-Token')
                                 },
-                                body: JSON.stringify({assigneeId: ""+json.items[0].id+""})
+                                body: JSON.stringify({assigneeId: ""+json.id+""})
                             });
                         }
 
@@ -647,17 +655,17 @@
             document.querySelector("#details-users > div:nth-child(5)").append(x);
             x.addEventListener("click",()=>{
                 ifLoaded3(localStorage.getItem('HP-Token')).then((el)=>{
-                    fetch(`https://helpdesk/v1/users/?filter=%7B%22roles%22:%5B%22admin%22,%22agent%22%5D,%22search%22:%7B%22Fields%22:%7B%22fullName%22:%22${userSearch}%22,%22userName%22:%22${userSearch}%22%7D%7D,%22activated%22:true%7D&limit=20&offset=0&search=${userSearch}`, {
+                    fetch(`https://helpdesk/v1/users/me`, {
                         headers: {
                             Authorization: localStorage.getItem('HP-Token')
                         }
                     })
                         .then(resp => resp.json())
-                        .then(json => {
-                        console.log("Moje id = "+json.items[0].id);
-
-                        if(id){
-                            fetch(`https://helpdesk/v1/tickets/${id}/watchers?limit=false`,{
+                        .then(async json => {
+                        console.log("Moje id = "+json.id);
+                        let noweId = await getIdSubject()??id;
+                        if(noweId){
+                            fetch(`https://helpdesk/v1/tickets/${noweId}/watchers?limit=false`,{
                                 method: 'GET',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -670,16 +678,16 @@
                                     let watchersInclude = [];
                                     el.items.forEach(e=>{
                                         watchersInclude.push(e.id);
-                                        if(json.items[0].id !== e.id){
+                                        if(json.id !== e.id){
                                             watchers.push(e.id);
                                         }
                                     });
-                                    if(!watchersInclude.includes(json.items[0].id)){
-                                        watchers.push(json.items[0].id);
+                                    if(!watchersInclude.includes(json.id)){
+                                        watchers.push(json.id);
                                     }
                                     //console.log(watchers);
 
-                                    fetch(`https://helpdesk/v1/tickets/${id}/watchers`,{
+                                    fetch(`https://helpdesk/v1/tickets/${noweId}/watchers`,{
                                         method: 'PUT',
                                         headers: {
                                             'Content-Type': 'application/json',
@@ -1018,23 +1026,52 @@
 
     }
 
+    function getIdSubject(){
+        return new Promise((resolve, reject) => {
+            let shortId = document.querySelector("[ng-if='::ticket.displayId']")?document.querySelector("[ng-if='::ticket.displayId']").innerHTML.replace("#",""):alert("Nie znaleziono id zgłoszenia/odśwież stronę");
+            if(shortId && shortId !== null && shortId !== ''){
+                try {
+                    fetch(`https://helpdesk/v1/tickets/${shortId}`,{
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: localStorage.getItem('HP-Token')
+                        }
+                    }).then(el=>el.json()).then(el=>{
+                        resolve(el.id);
+                    });
+                }
+                catch(er) {
+                    console.log("Nie znaleziono id ticketu w funkcji editSubject->getIdSubject() \n\rError: ");
+                    console.log(er);
+                }
+            }
+            else {
+                console.log("Nie znaleziono id ticketu w funkcji editSubject->getIdSubject() \n\rError: ");
+                alert("Skontaktuj się z dominik.banik@ekookna.pl, Nie znaleziono id ticketu w funkcji editSubject->getIdSubject()");
+            }
+        });
+    }
+
     function editSubject(id){
 
         ifLoaded2(".one-line.element__events").then((el)=>{
             if(document.querySelector("#editSubject") == null){
-                function changeSubject(nowaNazwa){
-                    //console.log(nowaNazwa);
-                    fetch(`https://helpdesk/v1/tickets/${id}`,{
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: localStorage.getItem('HP-Token')
-                        },
-                        body: JSON.stringify({subject: ""+nowaNazwa+""})
-                    }).then(el=>el.json()).then(el=>{
-                        //console.log(el);
-                        document.querySelector("[ax-ellipsis='ticket.subject'] > span").innerHTML = nowaNazwa;
-                    });
+                async function changeSubject(nowaNazwa){
+                    let noweId = await getIdSubject()??id;
+                    if(noweId){
+                        fetch(`https://helpdesk/v1/tickets/${noweId}`,{
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: localStorage.getItem('HP-Token')
+                            },
+                            body: JSON.stringify({subject: ""+nowaNazwa+""})
+                        }).then(el=>el.json()).then(el=>{
+                            //console.log(el);
+                            document.querySelector("[ax-ellipsis='ticket.subject'] > span").innerHTML = nowaNazwa;
+                        });
+                    }
                 }
 
                 //console.log("wczytano edit");
@@ -1146,7 +1183,7 @@
                     }
                     if(el.target.value == "Usuń wybór"){
                         after.selectedIndex = 0;
-                        let delAfter = prompt("Usuń opcję z 'Przed': ");
+                        let delAfter = prompt("Usuń opcję z 'Po': ");
                         if(delAfter != null){
                             afterArray = afterArray.filter(function (letter) {
                                 return letter !== delAfter;
