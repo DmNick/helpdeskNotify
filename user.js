@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.98
+// @version      0.98.99
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -16,6 +16,7 @@
 // @require      https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js
 // @require      https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js
 // @require      https://raw.githubusercontent.com/ejci/favico.js/master/favico-0.3.10.min.js
+// @require      https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js
 // @connect      https://raw.githubusercontent.com/DmNick/*
 // @connect      https://dmnick.ovh*
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAiJJREFUOE+Vk11Ik2EUx//Pq9t4xbWl9MaimhuIXWREVwXShTg/sPAmGrMmU1sXejEoyA0aJoqWedtNYYmzxL5wlOUHSRdB3teFCG4xa1rhaJhaNnfC593z1sUu5nNzzv9/zvmdhwceRkQM/awKCkagQEG2U5AxdZmYysRtgNEA6mDFKzp2GXT4FqDfk5WRzZSm8sDoOVbTpR1F6SM9OQ+KxvywDowmQFunv+9qswDo3xjA6Alos35j19t3BuS3BSrgZ+0aB+Q9qsN242sNJnSVy4+95kKcKC9FoM2p1QunjSog6fjBTf3QKWx53msNQjsuBDDzsA/XegdRbDaio+087zGNm8HoPijRsMoNOVSBTfc7DSB0rfs6JkPqI1e6/JgdvcnzovFiMLoN+tb0lRvG0EmQwaQB2O8k1txzqPd0YmKoi/vO9j6M3QnwXHm5H4z6QcsX4+qVxiqRdM5qAKHPtnbhxWAn92uagpga7ua5ZeSACvjsWlKv9NSBxLkZDSB0g7cb4XtB+G7cxdEyK7yuGt5zcPQQ2K8gaKX1kwqYbkai+sE/QEY3+gbAGEN1xXEErzQjFovxHuvjErB1P2jFu8gNm83GYzQahcVigSzLiEQisNvt3CciXts5UmoDJeFyFfClZUHbmmtiXhzGvg89cQ5Y8sznOgcptQ5T7BmUj70AwxmW9IGkfHVeEt/1P1z6D6AT3xmAwciLcUi4hKs0+RdlXsVylWyVrQAAAABJRU5ErkJggg==
@@ -24,7 +25,7 @@
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
-/* global $ Swal tippy Favico dayjs */
+/* global $ Swal tippy Favico dayjs Typed */
 
 
 (function() {
@@ -55,7 +56,7 @@
 
     .column {
      float: left;
-     width: 25%;
+     width: 468px;
      padding: 10px 20px;
     }
 
@@ -65,8 +66,9 @@
      text-align: left;
      background-color: #f1f1f1;
      color:black;
-     height:400px;
-     max-height:400px;
+     height:45vh;
+     /*min-height: 45vh;*/
+     /*max-height:400px;*/
      overflow-y:auto;
      position:relative;
      /*-webkit-animation-name: move;
@@ -81,8 +83,9 @@
     }
 
     .card > .desc {
-     overflow-x:hidden;
-     height:100%;
+     overflow-y:auto;
+     /*height:100%;*/
+     padding: 5px 0;
     }
 
     .card > .desc > span {
@@ -510,12 +513,12 @@
         }
     }
 
-    const delAlertOnLayout = (el) => {
+    const delAlertOnLayout = async (el) => {
         let stary = $("#"+el+"");
         stary.slideUp(1000, function(){this.remove()});
     }
 
-    const newAlertOnLayout = (xjson) => {
+    const newAlertOnLayout = async (xjson) => {
         let layout = document.querySelector("#layoutNotify > .row");
         let wrapper = document.createElement("div");
         wrapper.classList = "column";
@@ -525,14 +528,14 @@
         content.className = "card";
         content.style.display = "flex";
         content.style.flexDirection = "column";
-        content.innerHTML = [`
-          <span style="font-size:150%">${xjson.category.name} - ${xjson.priority.name}</span>
-          <h1>${xjson.subject}</h1>
-          <h1 class="ticket">${xjson.displayId}</h1>
-          <h3 class="desc"><span>${bezParagrafu(xjson.description)}</span></h3>
-          <h3 class="footerSignature">~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
-          <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
-        `].join('');
+        //content.innerHTML = [`
+        //  <span style="font-size:150%">${xjson.category.name} - ${xjson.priority.name}</span>
+        //  <h1>${xjson.subject}</h1>
+        //  <h1 class="ticket">${xjson.displayId}</h1>
+        //  <h3 class="desc"><span>${bezParagrafu(xjson.description)}</span></h3>
+        //  <h3 class="footerSignature">~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
+        //  <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
+        //`].join('');
         switch(xjson.priority.name){
                 case('Niski'):
                 content.style.backgroundColor = "lightgreen";
@@ -547,12 +550,25 @@
                 content.style.backgroundColor = "black";
                 content.style.color = "white";
                 content.style.border = "10px solid red;";
-                content.querySelector(".desc").style.color = "#ffffff1c";
                 break;
         }
+
         $(wrapper).hide();
         wrapper.append(content);
         $(wrapper).slideDown(1000);
+
+        const typed = new Typed(content, {
+            strings: ['<h1>testowy opis przed prawidłowym</h1>',
+                      `<span style="font-size:150%">${xjson.category.name} - ${xjson.priority.name}</span>
+          <h1>${xjson.subject}</h1>
+          <h1 class="ticket">${xjson.displayId}</h1>
+          <h3 class="desc"><span>${bezParagrafu(xjson.description)}</span></h3>
+          <h3 class="footerSignature">~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
+          <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
+                      `],
+            typeSpeed: 30,
+        });
+
         //console.log(bezParagrafu(xjson.description));
     }
 
@@ -1271,7 +1287,7 @@
         });
     }
 
-    function display(x,type){
+    async function display(x,type){
         if(hasNotify()===true){window.UserScript.Notifications.notify('Nowe zgłoszenia', x+' nowe/ych zgłoszeń!', 'https://helpdesk/v1/files/10200197-1845-4248-b26a-d5dd53cec7dd/icon.png');}
         if(hasAudio()===true){
             audioAlert(type);
@@ -1660,7 +1676,7 @@
                 if(url.indexOf("tickets?") > -1 && window.location.href.split('?')[0] == 'https://helpdesk/#/helpdesk'){
                     if (this.readyState == 4) {
                         if (this.status == 200){
-                            console.log(this);
+                            //console.log(this);
                             check(this);
                             przelacznik();
                             refreshZegary();
@@ -1686,7 +1702,7 @@
                             editSubject(JSON.parse(this.response).id);
                             przypiszMnie(JSON.parse(this.response).id);
                             odobserujMnie(JSON.parse(this.response).id);
-                            console.log(JSON.parse(this.response));
+                            //console.log(JSON.parse(this.response));
                         }
                     }
                 }
