@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.97
+// @version      0.98.98
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -17,6 +17,7 @@
 // @require      https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js
 // @require      https://raw.githubusercontent.com/ejci/favico.js/master/favico-0.3.10.min.js
 // @connect      https://raw.githubusercontent.com/DmNick/*
+// @connect      https://dmnick.ovh*
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAiJJREFUOE+Vk11Ik2EUx//Pq9t4xbWl9MaimhuIXWREVwXShTg/sPAmGrMmU1sXejEoyA0aJoqWedtNYYmzxL5wlOUHSRdB3teFCG4xa1rhaJhaNnfC593z1sUu5nNzzv9/zvmdhwceRkQM/awKCkagQEG2U5AxdZmYysRtgNEA6mDFKzp2GXT4FqDfk5WRzZSm8sDoOVbTpR1F6SM9OQ+KxvywDowmQFunv+9qswDo3xjA6Alos35j19t3BuS3BSrgZ+0aB+Q9qsN242sNJnSVy4+95kKcKC9FoM2p1QunjSog6fjBTf3QKWx53msNQjsuBDDzsA/XegdRbDaio+087zGNm8HoPijRsMoNOVSBTfc7DSB0rfs6JkPqI1e6/JgdvcnzovFiMLoN+tb0lRvG0EmQwaQB2O8k1txzqPd0YmKoi/vO9j6M3QnwXHm5H4z6QcsX4+qVxiqRdM5qAKHPtnbhxWAn92uagpga7ua5ZeSACvjsWlKv9NSBxLkZDSB0g7cb4XtB+G7cxdEyK7yuGt5zcPQQ2K8gaKX1kwqYbkai+sE/QEY3+gbAGEN1xXEErzQjFovxHuvjErB1P2jFu8gNm83GYzQahcVigSzLiEQisNvt3CciXts5UmoDJeFyFfClZUHbmmtiXhzGvg89cQ5Y8sznOgcptQ5T7BmUj70AwxmW9IGkfHVeEt/1P1z6D6AT3xmAwciLcUi4hKs0+RdlXsVylWyVrQAAAABJRU5ErkJggg==
 // @resource     IMPORTED_CSS https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css
 // @grant        GM_getResourceText
@@ -61,12 +62,13 @@
     .card {
      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
      padding: 16px;
-     text-align: center;
+     text-align: left;
      background-color: #f1f1f1;
      color:black;
      height:400px;
      max-height:400px;
      overflow-y:auto;
+     position:relative;
      /*-webkit-animation-name: move;
      -webkit-animation-duration: 10s;
      -webkit-animation-iteration-count: infinite;
@@ -78,7 +80,26 @@
      margin: 10px 0;
     }
 
-    .footerContent {
+    .card > .desc {
+     overflow-x:hidden;
+     height:100%;
+    }
+
+    .card > .desc > span {
+     display:block;
+     /*animation: infiniteScroll infinite 3s alternate;*/
+    }
+
+    .card > .ticket {
+     position:absolute;
+     right:20px;
+     bottom:10px;
+     color:#0000008c;
+     font-weight:bold;
+     opacity: 0.4;
+    }
+
+    .footerSignature {
      margin-top: auto;
     }
 
@@ -294,6 +315,18 @@
       background-color: red;
      }
     }
+
+    @keyframes infiniteScroll {
+     0% {
+      margin-top: 0%;
+     }
+     50% {
+      margin-top: -100%;
+     }
+     100% {
+      margin-top: -240%;
+     }
+    }
     `;
 
     function refreshList(){
@@ -493,10 +526,11 @@
         content.style.display = "flex";
         content.style.flexDirection = "column";
         content.innerHTML = [`
-          <sup>${xjson.status} - ${xjson.category.name} - ${xjson.priority.name}</sup>
-          <h1>${xjson.subject} (${xjson.displayId})</h1>
-          <h3>${bezParagrafu(xjson.description)}</h3>
-          <h3>~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
+          <span style="font-size:150%">${xjson.category.name} - ${xjson.priority.name}</span>
+          <h1>${xjson.subject}</h1>
+          <h1 class="ticket">${xjson.displayId}</h1>
+          <h3 class="desc"><span>${bezParagrafu(xjson.description)}</span></h3>
+          <h3 class="footerSignature">~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
           <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
         `].join('');
         switch(xjson.priority.name){
@@ -513,6 +547,7 @@
                 content.style.backgroundColor = "black";
                 content.style.color = "white";
                 content.style.border = "10px solid red;";
+                content.querySelector(".desc").style.color = "#ffffff1c";
                 break;
         }
         $(wrapper).hide();
@@ -552,12 +587,17 @@
             if(!document.querySelector(".dodajIZakoncz")){
                 let button = document.createElement("div");
                 button.classList = 'btn btn-info dodajIZakoncz';
-                button.innerHTML = "Dodaj i zakończ";
+                button.innerHTML = "Zakończ zgłoszenie";
                 button.style.padding = "8px 20px";
                 button.style.fontSize = "13px";
                 button.style.fontWeight = "600";
                 panel.prepend(button);
                 //button.preventDefault();
+                let commentEditor = $("[name='editor'] div[ta-bind='ta-bind']");
+                commentEditor.on('keyup blur',()=>{
+                if(commentEditor.html() == '<p><br></p>' || commentEditor == ''){button.innerHTML = 'Zakończ zgłoszenie'}
+                    else{button.innerHTML = 'Dodaj i zakończ'}
+                });
                 button.addEventListener('click',(el) => {
                     el.preventDefault()
                     let wew = document.querySelector("#wrap [ng-model='comment.isInternal']").checked;
@@ -1620,6 +1660,7 @@
                 if(url.indexOf("tickets?") > -1 && window.location.href.split('?')[0] == 'https://helpdesk/#/helpdesk'){
                     if (this.readyState == 4) {
                         if (this.status == 200){
+                            console.log(this);
                             check(this);
                             przelacznik();
                             refreshZegary();
