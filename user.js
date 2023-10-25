@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.98.99
+// @version      0.99.01
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -56,7 +56,8 @@
 
     .column {
      float: left;
-     width: 468px;
+     min-width:33%;
+     width: 600px;
      padding: 10px 20px;
     }
 
@@ -519,6 +520,20 @@
     }
 
     const newAlertOnLayout = async (xjson) => {
+
+
+        let propozycja = ['Widzisz mnie?',
+                          'Psycha siada?',
+                          'mówi Hymel Jadwiga tak. ale yy co się stało. sterta jest podpalona. i sterta już prawie się dopala',
+                          'Premia 20k na święta, brygadzista obiecał',
+                          'pyk, pyk, pyk, jako-tako i fajrant.',
+                          'Zgadza się ukradłem, ale tylko frajer by nie skorzystał. Trzeba było pilnować',
+                          'Panie, ja skończyłem podstawówkę, nie geografię',
+                          'Jo nie chcioł, jo nie wiedzioł',
+                          'Nie kupujcie tych słuchawek Jabra'
+                         ];
+        let randomPropozycja = propozycja[Math.floor(Math.random() * propozycja.length)];
+
         let layout = document.querySelector("#layoutNotify > .row");
         let wrapper = document.createElement("div");
         wrapper.classList = "column";
@@ -528,14 +543,14 @@
         content.className = "card";
         content.style.display = "flex";
         content.style.flexDirection = "column";
-        //content.innerHTML = [`
-        //  <span style="font-size:150%">${xjson.category.name} - ${xjson.priority.name}</span>
-        //  <h1>${xjson.subject}</h1>
-        //  <h1 class="ticket">${xjson.displayId}</h1>
-        //  <h3 class="desc"><span>${bezParagrafu(xjson.description)}</span></h3>
-        //  <h3 class="footerSignature">~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
-        //  <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
-        //`].join('');
+        content.innerHTML = [`
+          <span style="font-size:150%"></span>
+          <h1></h1>
+          <h1 class="ticket"></h1>
+          <h3 class="desc"><span></span></h3>
+          <h3 class="footerSignature"></h3>
+          <h4 class="footerContent"></h4>
+        `].join('');
         switch(xjson.priority.name){
                 case('Niski'):
                 content.style.backgroundColor = "lightgreen";
@@ -558,18 +573,20 @@
         $(wrapper).slideDown(1000);
 
         const typed = new Typed(content, {
-            strings: ['<h1>testowy opis przed prawidłowym</h1>',
+          //  stringsElement: content,
+            strings: [`<h1>${randomPropozycja}</h1>`,
                       `<span style="font-size:150%">${xjson.category.name} - ${xjson.priority.name}</span>
           <h1>${xjson.subject}</h1>
           <h1 class="ticket">${xjson.displayId}</h1>
-          <h3 class="desc"><span>${bezParagrafu(xjson.description)}</span></h3>
+          <h3 class="desc">${bezParagrafu(xjson.description)}</h3>
           <h3 class="footerSignature">~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
           <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
-                      `],
+                     `],
             typeSpeed: 30,
+            showCursor: false,
+            contentType: 'html',
+            //shuffle: true,
         });
-
-        //console.log(bezParagrafu(xjson.description));
     }
 
     function zamknijZgloszenie(){
