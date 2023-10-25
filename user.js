@@ -578,7 +578,7 @@
                       `<span style="font-size:150%">${xjson.category.name} - ${xjson.priority.name}</span>
           <h1>${xjson.subject}</h1>
           <h1 class="ticket">${xjson.displayId}</h1>
-          <h3 class="desc">${bezParagrafu(xjson.description)}</h3>
+          <h3 class="desc"><span>${bezParagrafu(xjson.description)}</span></h3>
           <h3 class="footerSignature">~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
           <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
                      `],
