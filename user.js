@@ -543,14 +543,14 @@
         content.className = "card";
         content.style.display = "flex";
         content.style.flexDirection = "column";
-        content.innerHTML = [`
-          <span style="font-size:150%"></span>
-          <h1></h1>
-          <h1 class="ticket"></h1>
-          <h3 class="desc"><span></span></h3>
-          <h3 class="footerSignature"></h3>
-          <h4 class="footerContent"></h4>
-        `].join('');
+        //content.innerHTML = [`
+        //  <span style="font-size:150%"></span>
+        //  <h1></h1>
+        //  <h1 class="ticket"></h1>
+        //  <h3 class="desc"><span></span></h3>
+        //  <h3 class="footerSignature"></h3>
+        //  <h4 class="footerContent"></h4>
+        //`].join('');
         switch(xjson.priority.name){
                 case('Niski'):
                 content.style.backgroundColor = "lightgreen";
