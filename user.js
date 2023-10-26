@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.99.01
+// @version      0.99.02
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -84,7 +84,7 @@
     }
 
     .card > .desc {
-     overflow-y:auto;
+     overflow-y:hidden;
      /*height:100%;*/
      padding: 5px 0;
     }
@@ -92,6 +92,8 @@
     .card > .desc > span {
      display:block;
      /*animation: infiniteScroll infinite 3s alternate;*/
+     transform: translateY(0%);
+     animation: scrollLoop calc(1s + (var(--text-length) / 300 * 4s)) alternate infinite ease-in-out;
     }
 
     .card > .ticket {
@@ -320,15 +322,12 @@
      }
     }
 
-    @keyframes infiniteScroll {
-     0% {
-      margin-top: 0%;
+    @keyframes scrollLoop {
+     from {
+      transform: translateY(0%);
      }
-     50% {
-      margin-top: -100%;
-     }
-     100% {
-      margin-top: -240%;
+     to {
+      transform: translateY(calc(-100% + calc(1px * var(--text-height))));
      }
     }
     `;
@@ -530,7 +529,9 @@
                           'Zgadza się ukradłem, ale tylko frajer by nie skorzystał. Trzeba było pilnować',
                           'Panie, ja skończyłem podstawówkę, nie geografię',
                           'Jo nie chcioł, jo nie wiedzioł',
-                          'Nie kupujcie tych słuchawek Jabra'
+                          'Nie kupujcie tych słuchawek Jabra',
+                          'Wszystko jest w porządku jest git pozdrawiam całą Legnice dobrych chlopakow niech sie to trzyma dobry przekaz leci',
+                          'U mnie działa, zamykam'
                          ];
         let randomPropozycja = propozycja[Math.floor(Math.random() * propozycja.length)];
 
@@ -574,7 +575,7 @@
 
         const typed = new Typed(content, {
           //  stringsElement: content,
-            strings: [`<h1>${randomPropozycja}</h1>`,
+            strings: [`<h1>${randomPropozycja}</h1>^2000`,
                       `<span style="font-size:150%">${xjson.category.name} - ${xjson.priority.name}</span>
           <h1>${xjson.subject}</h1>
           <h1 class="ticket">${xjson.displayId}</h1>
@@ -582,11 +583,20 @@
           <h3 class="footerSignature">~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
           <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
                      `],
-            typeSpeed: 30,
+            typeSpeed: 0,
             showCursor: false,
             contentType: 'html',
             //shuffle: true,
+            onComplete: (self) => {
+
+                var textLength = content.querySelector('.desc > span').textContent.length;
+                var textHeight = content.querySelector('.desc').clientHeight-10;
+                content.querySelector('.desc > span').style.setProperty('--text-length', textLength);
+                content.querySelector('.desc > span').style.setProperty('--text-height', textHeight);
+            },
         });
+        //console.log($(`${content}.desc`));
+        console.log(content.querySelector('.desc'));
     }
 
     function zamknijZgloszenie(){
