@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.99.02
+// @version      0.99.03
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -521,8 +521,7 @@
     const newAlertOnLayout = async (xjson) => {
 
 
-        let propozycja = ['Widzisz mnie?',
-                          'Psycha siada?',
+        let propozycja = ['Widzisz mnie, greg widzisz mnie?',
                           'mówi Hymel Jadwiga tak. ale yy co się stało. sterta jest podpalona. i sterta już prawie się dopala',
                           'Premia 20k na święta, brygadzista obiecał',
                           'pyk, pyk, pyk, jako-tako i fajrant.',
@@ -531,7 +530,19 @@
                           'Jo nie chcioł, jo nie wiedzioł',
                           'Nie kupujcie tych słuchawek Jabra',
                           'Wszystko jest w porządku jest git pozdrawiam całą Legnice dobrych chlopakow niech sie to trzyma dobry przekaz leci',
-                          'U mnie działa, zamykam'
+                          'U mnie działa, zamykam',
+                          'aktualnie trwają prace konserwowe',
+                          'Idź poszukaj, jak trafisz to będzie',
+                          'To nie jest praca jak musisz pracować',
+                          'Jedź do maka i kup 3 BIG MILKI',
+                          'Bryza papieru',
+                          'jechali takim starym starym (STAR)',
+                          'Piraci z karabinów',
+                          'Czorny powinien na zoli leżeć a nie w bala grać',
+                          'DEUTSCHE GUSTO',
+                          'Byli my kiedyś w Paryżu na wieży Alfia',
+                          'Ci co mają więcej chromosomów (21) to daltoniści',
+                          'Zainstaluj mi szniping tool 🤓'
                          ];
         let randomPropozycja = propozycja[Math.floor(Math.random() * propozycja.length)];
 
