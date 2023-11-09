@@ -26,6 +26,10 @@
             "value": "Cześć, hasło można zresetować samodzielnie (wraz z odblokowaniem konta) przez portal do wniosków urlopowych. \n<a href=\"https://portal.ekookna.net.pl/Portal/Account/LogOn\" target=\"_blank\">https://portal.ekookna.net.pl/Portal/Account/LogOn</a> \nPod przyciskiem \"zaloguj się\" jest \"odzyskaj hasło\". Wpisujesz maila na którego przyjdą dalsze instrukcje. Daj znać czy się udało."
         },
         {
+            "nazwa": "WINPRO HASŁO",
+            "value": "Hej, dostęp do winpro został zresetowany, nowe hasło to: \nZaloguj się, wejdź w zakładkę \"Ogólne\" i wybierz \"Zmiana hasła\", Pamiętaj żeby miało one 12 znaków, duża, mała litera cyfra bądź znak specjalny. \nDaj znać czy się udało"
+        },
+        {
             "nazwa": "WYGASŁO HASŁO",
             "value": "Hej, dzisiaj upływa Ci ważność hasła, aby rozwiązać ten problem wystarczy je zmienić. Wciśnij CTRL+ALT+DEL na klawiaturze i wybierz opcje \"zmień hasło\". Jak już się uda, włącz na nowo Winpro. Proszę o informację czy problem został rozwiązany."
         },
