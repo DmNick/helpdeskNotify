@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.99.03
+// @version      0.99.04
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -247,6 +247,10 @@
      text-decoration: line-through;
     }
 
+    .WiecejWidokow {
+     max-height: calc(90% - 40px)!IMPORTANT;
+    }
+
     @page {
     size: 100mm 36mm;
     /* auto is the initial value */
@@ -360,8 +364,9 @@
         var x = 0;
         var tid = setInterval(()=>{
             //console.log("wczytywanie "+div);
-            if ($(div).length == 1 || $(div).ELEMENT_NODE == 1) {
+            if ($(div).length == 1 || $(div).ELEMENT_NODE == 1 || $(div) !== null) {
                 functionToLoad();
+                return true;
             }
             if (x > 40){
                 returnFalse();
@@ -388,7 +393,7 @@
         var tid = setInterval(()=>{
             //console.log("wczytywanie "+div);
             //console.log($(div));
-            if ($(div).length == 1 || $(div).ELEMENT_NODE == 1) {
+            if ($(div).length == 1 || $(div).ELEMENT_NODE == 1 || $(div) !== null) {
                 clearInterval(tid);
                 //console.log(x);
                 myResolve(true);
@@ -528,7 +533,7 @@
                           'Zgadza się ukradłem, ale tylko frajer by nie skorzystał. Trzeba było pilnować',
                           'Panie, ja skończyłem podstawówkę, nie geografię',
                           'Jo nie chcioł, jo nie wiedzioł',
-                          'Nie kupujcie tych słuchawek Jabra',
+                          'Nie kupujcie tych frajerskich słuchawek Jabra',
                           'Wszystko jest w porządku jest git pozdrawiam całą Legnice dobrych chlopakow niech sie to trzyma dobry przekaz leci',
                           'U mnie działa, zamykam',
                           'aktualnie trwają prace konserwowe',
@@ -542,7 +547,11 @@
                           'DEUTSCHE GUSTO',
                           'Byli my kiedyś w Paryżu na wieży Alfia',
                           'Ci co mają więcej chromosomów (21) to daltoniści',
-                          'Zainstaluj mi szniping tool 🤓'
+                          'Zainstaluj mi szniping tool 🤓',
+                          'Ale parówa co? Lampa jak skurwysyn mówię, lampa jak chuj',
+                          'Ty, coś Ty zrobił Paweł? ale.. ale jak?',
+                          'Pani, jo tako staro, a musza łopatować',
+                          'Poczekaj chwile, leci commit...'
                          ];
         let randomPropozycja = propozycja[Math.floor(Math.random() * propozycja.length)];
 
@@ -637,7 +646,7 @@
 
     function dodajIZakoncz(){
         let panel = $(".upload-files > .actions");
-        ifLoaded("[ng-click='addComment()']").then(() => {
+        ifLoaded2("[ng-click='addComment()']").then(() => {
             if(!document.querySelector(".dodajIZakoncz")){
                 let button = document.createElement("div");
                 button.classList = 'btn btn-info dodajIZakoncz';
@@ -803,21 +812,18 @@
     }
 
     function WiecejWidokow(){
-        try {
-            //ifLoaded2(".filters-loaded").then((el)=>{
+            ifLoaded2(".filters-loaded").then((el)=>{
                 console.log("Wczytano filtry");
-                document.querySelector(".sidebar.table-filters-double .sidebar-overflow.small").style.maxHeight = "calc(90% - 40px)";
-            //});
-        }
-        catch (e) {
-            console.log(e);
-        }
+                //document.querySelector(".sidebar.table-filters-double .sidebar-overflow.small").style.maxHeight = "calc(90% - 40px)";
+                document.querySelector(".sidebar.table-filters-double .sidebar-overflow.small").classList.add('WiecejWidokow');
+            });
+
     }
 
 
     function WylaczWewnetrzneOdp(){
-        ifLoaded("[ng-model='comment.isInternal']").then(()=>{
-            //console.log("wczytano slider");
+        ifLoaded2("[ng-model='comment.isInternal']").then(()=>{
+            console.log("wczytano slider");
             if(document.querySelector("[ng-model='comment.isInternal']").checked == true){
                 document.querySelector("[ng-model='comment.isInternal']").click();
             };
@@ -856,7 +862,7 @@
 
     function wczytajSzablony(){
         //$(document.body).append($('<div/>', { id: 'licznikSzablony', html: '0'}));
-        ifLoaded("#details-additional-fields").then(()=>{
+        ifLoaded2("#details-additional-fields").then(()=>{
             if(!document.querySelector("#selectSzablony")){
                 let commentBar = document.querySelector("#wrap .upload-files div.actions");
                 let selectSzablony = document.createElement("span");
@@ -888,7 +894,7 @@
                     dataType: "json",
                     success: function(e) {
                         e.szablony.forEach((el,index) => {
-                            $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value, attr: {"data-gif":el.zalacznik??""}}).appendTo( ".form-select" );
+                            $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value, attr: {"data-gif":el.zalacznik??""}}).appendTo( "#selectSzablony .form-select" );
                         });
                     },
                     error: function (er) {
