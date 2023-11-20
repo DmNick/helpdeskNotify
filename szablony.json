@@ -22,6 +22,10 @@
             "value": "Cześć,\nodpowiednie uprawnienia do logowania zdalnego zostały nadane. Poniżej link do instrukcji instalacji połączenia zdalnego, w razie problemów na ostatniej stronie informacja w jaki sposób dział IT może udzielić pomocy.\n\nInstrukcja:\n<a href=\"https://docs.google.com/document/d/1-9isFrlRYli2uilZsahKhf7425dm1kiAczTjWH1-jbo\" target=\"_blank\">https://docs.google.com/document/d/1-9isFrlRYli2uilZsahKhf7425dm1kiAczTjWH1-jbo</a>"
         },
         {
+            "nazwa": "ZMIANA HASŁA",
+            "value": "Hej, zmieniłem Ci hasło na: Aligator123$\nHasło będzie od razu do zmiany, pamiętaj, że hasło musi mieć: 12 znaków, dużą i małą literę, cyfrę oraz znak specjalny.\nDaj znać czy się udało."
+        },
+        {
             "nazwa": "IMPULS HASŁO",
             "value": "Cześć, hasło można zresetować samodzielnie (wraz z odblokowaniem konta) przez portal do wniosków urlopowych. \n<a href=\"https://portal.ekookna.net.pl/Portal/Account/LogOn\" target=\"_blank\">https://portal.ekookna.net.pl/Portal/Account/LogOn</a> \nPod przyciskiem \"zaloguj się\" jest \"odzyskaj hasło\". Wpisujesz maila na którego przyjdą dalsze instrukcje. Daj znać czy się udało."
         },
