@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.99.04
+// @version      0.99.05
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -192,7 +192,8 @@
     }
 
     .ticket-description {
-     max-height:400px;
+     height: auto;
+     max-height: none;
     }
 
     #footer {
@@ -337,7 +338,23 @@
     `;
 
     function refreshList(){
-        document.querySelector("[ng-click='getTickets()']").click();
+        try {
+            document.querySelector("[ng-click='getTickets()']").click();
+        }
+        catch {
+            console.log("auth error");
+            document.querySelector("#wrapper-unauthorized button[validation-submit='loginForm']").click();
+            //checkIfLogged();
+        }
+    }
+
+    function isNullOrEmpty(el){
+        if(el == null || el == undefined || el == ''){
+            return null;
+        }
+        else{
+            return el;
+        }
     }
 
     function minutes(el){
@@ -354,10 +371,13 @@
         }
     }
 
-    function bezParagrafu(x){
-        let text = document.createElement("div");
-        text.innerHTML = x;
-        return text.innerText;
+    function bezParagrafu(x) {
+        let temporaryDiv = document.createElement('div');
+        temporaryDiv.innerHTML = x;
+        var texts = Array.from(temporaryDiv.children).map(child => child.textContent);
+        var result = texts.join('\n');
+
+        return result;
     }
 
     async function ifLoaded(div){
@@ -551,7 +571,8 @@
                           'Ale parówa co? Lampa jak skurwysyn mówię, lampa jak chuj',
                           'Ty, coś Ty zrobił Paweł? ale.. ale jak?',
                           'Pani, jo tako staro, a musza łopatować',
-                          'Poczekaj chwile, leci commit...'
+                          'Poczekaj chwile, leci commit...',
+                          'A sprawdź teraz..'
                          ];
         let randomPropozycja = propozycja[Math.floor(Math.random() * propozycja.length)];
 
@@ -600,7 +621,7 @@
           <h1>${xjson.subject}</h1>
           <h1 class="ticket">${xjson.displayId}</h1>
           <h3 class="desc"><span>${bezParagrafu(xjson.description)}</span></h3>
-          <h3 class="footerSignature">~${xjson.requester.fullName ?? xjson.creatorUser.fullName}</h3>
+          <h3 class="footerSignature">~${isNullOrEmpty(xjson.requester.fullName) ?? isNullOrEmpty(xjson.requester.userName) ?? isNullOrEmpty(xjson.creatorUser.fullName) ?? isNullOrEmpty(xjson.creatorUser.userName)}</h3>
           <h4 class="footerContent" data-cr="${Date.parse(xjson.creationDate)}">${minutes(new Date(xjson.creationDate))}</h4>
                      `],
             typeSpeed: 0,
@@ -616,7 +637,7 @@
             },
         });
         //console.log($(`${content}.desc`));
-        console.log(content.querySelector('.desc'));
+        //console.log(content.querySelector('.desc'));
     }
 
     function zamknijZgloszenie(){
@@ -1746,7 +1767,7 @@
                             editSubject(JSON.parse(this.response).id);
                             przypiszMnie(JSON.parse(this.response).id);
                             odobserujMnie(JSON.parse(this.response).id);
-                            //console.log(JSON.parse(this.response));
+                            //console.log(bezParagrafu(JSON.parse(this.response).description));
                         }
                     }
                 }
