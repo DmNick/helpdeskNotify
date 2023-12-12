@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.99.06
+// @version      0.99.07
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -256,6 +256,10 @@
      color: #fff;
      background-color: var(--status-solved);
      border-color: #9c4ff5;
+    }
+
+    .popover.user-infobox {
+     background-color: black;
     }
 
     @page {
@@ -547,7 +551,7 @@
                 return '/v1/files/47f01deb-260c-416b-a042-48e837dda97f/HP-WiecejWidokow.png';
                 break;
             case('HP-ZakonczRozwiazane'):
-                return '/v1/files/47f01deb-260c-416b-a042-48e837dda97f/HP-WiecejWidokow.png';
+                return '/v1/files/65a9516d-c2e9-43f9-a3d3-ffd1fcb59011/HP-ZakonczRozwiazane.png';
                 break;
         }
     }
@@ -1564,7 +1568,7 @@
         <div><span title="Etykietki na stronie ze skóconymi informacjami o zgłoszeniu">Drukowanie etykietek: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-PrintLayout"> <span class="slider"></span></label></div>
         <div><span title="Wyłącza domyślnie wewnętrzne odpowiedzi w zgłoszeniach">Wyłącz zawsze wewnętrzne: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WylaczWewnetrzneOdp"> <span class="slider"></span></label></div>
         <div><span title="Wiecej miejsca dla widoków">Wiecej widoków: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WiecejWidokow"> <span class="slider"></span></label></div>
-        <div><span title="Wybierz działanie przycisku">Wybierz działanie przycisku: </span><span style="width:auto">Zakończ</span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-ZakonczRozwiazane"> <span class="slider"></span></label><span style="width:auto">Rozwiązane</span></div>
+        <div><span title="Wybierz działanie przycisku">Wybierz działanie przycisku: </span><span style="width:auto">Zamknięte</span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-ZakonczRozwiazane"> <span class="slider"></span></label><span style="width:auto">Rozwiązane</span></div>
         <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio form-control" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a>
         <a title="Stwórz własny json" style="margin:0 10px" target="_blank" href="https://dmnick.ovh/json_editor.html"> + </a>
         </div>
