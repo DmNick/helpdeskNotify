@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.99.05
+// @version      0.99.06
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -252,6 +252,12 @@
      max-height: calc(90% - 40px)!IMPORTANT;
     }
 
+    .btn-rozwiaz {
+     color: #fff;
+     background-color: var(--status-solved);
+     border-color: #9c4ff5;
+    }
+
     @page {
     size: 100mm 36mm;
     /* auto is the initial value */
@@ -374,7 +380,12 @@
     function bezParagrafu(x) {
         let temporaryDiv = document.createElement('div');
         temporaryDiv.innerHTML = x;
-        var texts = Array.from(temporaryDiv.children).map(child => child.textContent);
+        var texts = Array.from(temporaryDiv.children).map(child => {
+            if (child.tagName.toLowerCase() === 'br') {
+                return ' ';
+            }
+            return child.textContent;
+        });
         var result = texts.join('\n');
 
         return result;
@@ -535,6 +546,9 @@
             case('HP-WiecejWidokow'):
                 return '/v1/files/47f01deb-260c-416b-a042-48e837dda97f/HP-WiecejWidokow.png';
                 break;
+            case('HP-ZakonczRozwiazane'):
+                return '/v1/files/47f01deb-260c-416b-a042-48e837dda97f/HP-WiecejWidokow.png';
+                break;
         }
     }
 
@@ -665,7 +679,63 @@
         }
     }
 
-    function dodajIZakoncz(){
+    const zmienStatusZgloszenia = async (id,nowyStatus) => {
+        if(!localStorage.getItem('HP-Token')) throw new Error("brak access tokena: zmienStatusZgloszenia");
+        let noweId = await getIdSubject()??id;
+        ifLoaded3(localStorage.getItem('HP-Token')).then((el)=>{
+            if(el && noweId){
+                fetch(`https://helpdesk/v1/tickets/${noweId}`,{
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: localStorage.getItem('HP-Token')
+                    },
+                    body: JSON.stringify({status: ""+nowyStatus+""})
+                });
+            }
+        });
+    }
+
+    function dodajIRozwiazane(id){
+        //zmienStatusZgloszenia(id,"Solved");
+        //console.log(`id `+id);
+        let panel = $(".upload-files > .actions");
+        ifLoaded2("[ng-click='addComment()']").then(() => {
+            if(!document.querySelector(".dodajIZakoncz")){
+                let button = document.createElement("div");
+                button.classList = 'btn btn-rozwiaz dodajIZakoncz';
+                button.innerHTML = "Zakończ zgłoszenie";
+                button.style.padding = "8px 20px";
+                button.style.fontSize = "13px";
+                button.style.fontWeight = "600";
+                panel.prepend(button);
+                //button.preventDefault();
+                let commentEditor = $("[name='editor'] div[ta-bind='ta-bind']");
+                commentEditor.on('keyup blur',()=>{
+                if(commentEditor.html() == '<p><br></p>' || commentEditor == ''){button.innerHTML = 'Zakończ zgłoszenie'}
+                    else{button.innerHTML = 'Dodaj i zakończ'}
+                });
+                button.addEventListener('click',(el) => {
+                    el.preventDefault()
+                    //console.log("kliknięto przycisk dodajIZakoncz");
+
+                    if(commentEditor.html() == '<p><br></p>' || commentEditor == ''){
+                        zmienStatusZgloszenia(id,"Solved");
+                        //console.log("sam status");
+                    }
+                    else{
+                        //$("[ax-select-change='setStatus()'] select").selectedIndex = $("[ax-select-change='setStatus()'] select").length-2;
+                        //document.querySelector("[ax-select-change='setStatus()'] select").dispatchEvent(new Event('change'));
+                        zmienStatusZgloszenia(id,"Solved");
+                        $("[ng-click='addComment()']").click();
+                        //console.log("status i komentarz");
+                    }
+                });
+            }
+        });
+    }
+
+    function dodajIZakoncz(id){
         let panel = $(".upload-files > .actions");
         ifLoaded2("[ng-click='addComment()']").then(() => {
             if(!document.querySelector(".dodajIZakoncz")){
@@ -1362,61 +1432,70 @@
     }
 
     function hasAudio() {
-            if (localStorage.getItem("HP-Audio") == 'true'){
-                return(true);
-            }
-            else {
-                return(false);
-            }
+        if (localStorage.getItem("HP-Audio") == 'true'){
+            return(true);
+        }
+        else {
+            return(false);
+        }
     }
 
     function hasNotify() {
-            if (localStorage.getItem("HP-Notify") == 'true'){
-                return(true);
-            }
-            else {
-                return(false);
-            }
+        if (localStorage.getItem("HP-Notify") == 'true'){
+            return(true);
+        }
+        else {
+            return(false);
+        }
     }
 
     function hasPrintLayout() {
-            if (localStorage.getItem("HP-PrintLayout") == 'true'){
-                return(true);
-            }
-            else {
-                return(false);
-            }
+        if (localStorage.getItem("HP-PrintLayout") == 'true'){
+            return(true);
+        }
+        else {
+            return(false);
+        }
     }
 
     function hasWylaczWewnetrzneOdp() {
-            if (localStorage.getItem("HP-WylaczWewnetrzneOdp") == 'true'){
-                return(true);
-            }
-            else {
-                return(false);
-            }
+        if (localStorage.getItem("HP-WylaczWewnetrzneOdp") == 'true'){
+            return(true);
+        }
+        else {
+            return(false);
+        }
     }
 
     function hasWiecejWidokow() {
-            if (localStorage.getItem("HP-WiecejWidokow") == 'true'){
-                return(true);
-            }
-            else {
-                return(false);
-            }
+        if (localStorage.getItem("HP-WiecejWidokow") == 'true'){
+            return(true);
+        }
+        else {
+            return(false);
+        }
     }
 
     function hasPrzypomnienie30min() {
-            if (localStorage.getItem("HP-Przypomnienie30min") == 'true'){
-                return(true);
-            }
-            else {
-                return(false);
-            }
+        if (localStorage.getItem("HP-Przypomnienie30min") == 'true'){
+            return(true);
+        }
+        else {
+            return(false);
+        }
+    }
+
+    function hasZakonczRozwiazane(){
+        if (localStorage.getItem("HP-ZakonczRozwiazane") == 'true'){
+            return(true);
+        }
+        else {
+            return(false);
+        }
     }
 
     function refresh10s(){
-        if(document.querySelector("#layoutNotify.widoczne")){
+        if(document.querySelector("#layoutNotify.widoczne") || localStorage.getItem("HP-Refresh10s") == 'true'){
             refreshList();
         }
     }
@@ -1485,6 +1564,7 @@
         <div><span title="Etykietki na stronie ze skóconymi informacjami o zgłoszeniu">Drukowanie etykietek: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-PrintLayout"> <span class="slider"></span></label></div>
         <div><span title="Wyłącza domyślnie wewnętrzne odpowiedzi w zgłoszeniach">Wyłącz zawsze wewnętrzne: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WylaczWewnetrzneOdp"> <span class="slider"></span></label></div>
         <div><span title="Wiecej miejsca dla widoków">Wiecej widoków: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WiecejWidokow"> <span class="slider"></span></label></div>
+        <div><span title="Wybierz działanie przycisku">Wybierz działanie przycisku: </span><span style="width:auto">Zakończ</span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-ZakonczRozwiazane"> <span class="slider"></span></label><span style="width:auto">Rozwiązane</span></div>
         <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio form-control" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a>
         <a title="Stwórz własny json" style="margin:0 10px" target="_blank" href="https://dmnick.ovh/json_editor.html"> + </a>
         </div>
@@ -1717,6 +1797,9 @@
         //                       //console.log(staryArray.includes(el));
         //                        if(staryArray.includes(el)===false){console.log("dodano: "+el);}
         //                      });
+        console.log("stary array "+staryArray.join(','));
+        console.log("nowy array "+nowyArray.join(','));
+
         if(staryArray.length != nowyArray.length){console.log("Różnica!!!");}
         //console.log("Ostatni refresh: "+new Date());
         console.log("Ostatni refresh: "+dayjs(new Date()).format('HH:mm:ss'));
@@ -1760,13 +1843,14 @@
                     }
                     if (this.readyState == 4) {
                         if (this.status == 200){
+                            let responseId = JSON.parse(this.response).id;
                             if(hasPrintLayout()){createPrintLayout(this)};
                             wczytajSzablony();
-                            dodajIZakoncz();
+                            if(hasZakonczRozwiazane()){dodajIRozwiazane(responseId)}else{dodajIZakoncz(responseId)}
                             if(hasWylaczWewnetrzneOdp()){WylaczWewnetrzneOdp()};
-                            editSubject(JSON.parse(this.response).id);
-                            przypiszMnie(JSON.parse(this.response).id);
-                            odobserujMnie(JSON.parse(this.response).id);
+                            editSubject(responseId);
+                            przypiszMnie(responseId);
+                            odobserujMnie(responseId);
                             //console.log(bezParagrafu(JSON.parse(this.response).description));
                         }
                     }
