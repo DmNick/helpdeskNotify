@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.99.07
+// @version      0.99.08
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -612,16 +612,16 @@
         //  <h4 class="footerContent"></h4>
         //`].join('');
         switch(xjson.priority.name){
-                case('Niski'):
+            case('Niski'):
                 content.style.backgroundColor = "lightgreen";
                 break;
-                case('Wysoki'):
+            case('Wysoki'):
                 content.style.backgroundColor = "indianred";
                 break;
-                case('Krytyczny'):
+            case('Krytyczny'):
                 content.style.backgroundColor = "red";
                 break;
-                case('Bloker'):
+            case('Bloker'):
                 content.style.backgroundColor = "black";
                 content.style.color = "white";
                 content.style.border = "10px solid red;";
@@ -633,7 +633,7 @@
         $(wrapper).slideDown(1000);
 
         const typed = new Typed(content, {
-          //  stringsElement: content,
+            //  stringsElement: content,
             strings: [`<h1>${randomPropozycja}</h1>^2000`,
                       `<span style="font-size:150%">${xjson.category.name} - ${xjson.priority.name}</span>
           <h1>${xjson.subject}</h1>
@@ -716,11 +716,11 @@
                 //button.preventDefault();
                 let commentEditor = $("[name='editor'] div[ta-bind='ta-bind']");
                 commentEditor.on('keyup blur',()=>{
-                if(commentEditor.html() == '<p><br></p>' || commentEditor == ''){button.innerHTML = 'Zakończ zgłoszenie'}
+                    if(commentEditor.html() == '<p><br></p>' || commentEditor == ''){button.innerHTML = 'Zakończ zgłoszenie'}
                     else{button.innerHTML = 'Dodaj i zakończ'}
                 });
                 button.addEventListener('click',(el) => {
-                    el.preventDefault()
+                    el.preventDefault();
                     //console.log("kliknięto przycisk dodajIZakoncz");
 
                     if(commentEditor.html() == '<p><br></p>' || commentEditor == ''){
@@ -753,7 +753,7 @@
                 //button.preventDefault();
                 let commentEditor = $("[name='editor'] div[ta-bind='ta-bind']");
                 commentEditor.on('keyup blur',()=>{
-                if(commentEditor.html() == '<p><br></p>' || commentEditor == ''){button.innerHTML = 'Zakończ zgłoszenie'}
+                    if(commentEditor.html() == '<p><br></p>' || commentEditor == ''){button.innerHTML = 'Zakończ zgłoszenie'}
                     else{button.innerHTML = 'Dodaj i zakończ'}
                 });
                 button.addEventListener('click',(el) => {
@@ -795,7 +795,32 @@
                 });
             }
         });
+    }
 
+    function kogoPrzypisac(){
+        if(document.querySelector(".WiolaCzyDawid") == null){
+            let x = document.createElement("div");
+            x.id = "WiolaCzyDawid";
+            x.classList = "row mb-10";
+            x.title = "Kogo przypisać do zgłoszenia?";
+            x.innerHTML = "Kto był ostatni?";
+
+            let url = encodeURI('https://helpdesk/v1/tickets?filter={"assigneeId":["3345","136557"]}&limit=1&offset=0&order={"creationDate":"desc"}');
+
+            fetch(url, {
+                headers: {
+                    Authorization: localStorage.getItem('HP-Token')
+                }
+            }).then(el => el.json()).then(el => {
+                if(el.items){
+                    x.innerHTML = x.innerHTML+" "+el.items[0].assignee.fullName;
+                    document.querySelector("#details-users").append(x);
+                }
+                else {
+                    console.log("Nie znaleziono wyników ostatnieZgloszenie()");
+                }
+            });
+        }
     }
 
     function przypiszMnie(id){
@@ -907,11 +932,11 @@
     }
 
     function WiecejWidokow(){
-            ifLoaded2(".filters-loaded").then((el)=>{
-                console.log("Wczytano filtry");
-                //document.querySelector(".sidebar.table-filters-double .sidebar-overflow.small").style.maxHeight = "calc(90% - 40px)";
-                document.querySelector(".sidebar.table-filters-double .sidebar-overflow.small").classList.add('WiecejWidokow');
-            });
+        ifLoaded2(".filters-loaded").then((el)=>{
+            console.log("Wczytano filtry");
+            //document.querySelector(".sidebar.table-filters-double .sidebar-overflow.small").style.maxHeight = "calc(90% - 40px)";
+            document.querySelector(".sidebar.table-filters-double .sidebar-overflow.small").classList.add('WiecejWidokow');
+        });
 
     }
 
@@ -972,9 +997,9 @@
                 //console.log(document.querySelectorAll("#selectSzablony select option"));
 
                 //$.getJSON('https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json',(e)=>{
-                    //console.log(e.szablony);
+                //console.log(e.szablony);
                 //    e.szablony.forEach((el,index) => {
-                        //console.log(el);
+                //console.log(el);
                 //        $( "<option/>", {"class": "my-new-list",html: el.nazwa, title: el.value, attr: {"data-gif":el.gif??""}}).appendTo( ".form-select" );
                 //    });
                 //});
@@ -1498,6 +1523,15 @@
         }
     }
 
+    function hasKogoPrzypisac(){
+        if (localStorage.getItem("HP-KogoPrzypisac") == 'true'){
+            return(true);
+        }
+        else {
+            return(false);
+        }
+    }
+
     function refresh10s(){
         if(document.querySelector("#layoutNotify.widoczne") || localStorage.getItem("HP-Refresh10s") == 'true'){
             refreshList();
@@ -1568,6 +1602,7 @@
         <div><span title="Etykietki na stronie ze skóconymi informacjami o zgłoszeniu">Drukowanie etykietek: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-PrintLayout"> <span class="slider"></span></label></div>
         <div><span title="Wyłącza domyślnie wewnętrzne odpowiedzi w zgłoszeniach">Wyłącz zawsze wewnętrzne: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WylaczWewnetrzneOdp"> <span class="slider"></span></label></div>
         <div><span title="Wiecej miejsca dla widoków">Wiecej widoków: </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-WiecejWidokow"> <span class="slider"></span></label></div>
+        <div><span title="Kogo wybrać do zgłoszenia">Kogo przypisać (admin mws): </span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-KogoPrzypisac"> <span class="slider"></span></label></div>
         <div><span title="Wybierz działanie przycisku">Wybierz działanie przycisku: </span><span style="width:auto">Zamknięte</span><label class="switch ml-5 mr-10 mb-0"><input type="checkbox" class="cbox" id="HP-ZakonczRozwiazane"> <span class="slider"></span></label><span style="width:auto">Rozwiązane</span></div>
         <div><label for="HP-Szablony" title="Link do własnych szablonów odpowiedzi">Własne szablony: </label><input class="audio form-control" type="text" placeholder="podaj link do .json" id="HP-Szablony" /><a title="Przykładowy json" style="margin:0 10px" target="_blank" href="https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/szablony.json">?</a>
         <a title="Stwórz własny json" style="margin:0 10px" target="_blank" href="https://dmnick.ovh/json_editor.html"> + </a>
@@ -1781,12 +1816,12 @@
                     }
                     nowyArray.push(el.displayId);
                 }
-        //         else {
-        //             if(nowyArray.includes(el.displayId)===false && staryArray.includes(el.displayId)){
-        //                 delAlertOnLayout(el.displayId);
-        //                 console.log("usunięto: "+el.displayId);
-        //             }
-        //         }
+                //         else {
+                //             if(nowyArray.includes(el.displayId)===false && staryArray.includes(el.displayId)){
+                //                 delAlertOnLayout(el.displayId);
+                //                 console.log("usunięto: "+el.displayId);
+                //             }
+                //         }
             });
         }
         sessionStorage.setItem("HP-aktywne", JSON.stringify(nowyArray));
@@ -1855,6 +1890,7 @@
                             editSubject(responseId);
                             przypiszMnie(responseId);
                             odobserujMnie(responseId);
+                            if(hasKogoPrzypisac()){kogoPrzypisac()};
                             //console.log(bezParagrafu(JSON.parse(this.response).description));
                         }
                     }
