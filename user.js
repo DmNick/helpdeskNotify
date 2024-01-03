@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Helpdesk / Powiadomienia windows
 // @namespace    Eko-okna
-// @version      0.99.08
+// @version      0.99.09
 // @description  Powiadomienia o nowych ticketach.
 // @author       Dominik Banik dominik.banik@ekookna.pl
 // @downloadURL  https://raw.githubusercontent.com/DmNick/helpdeskNotify/main/user.js
@@ -393,6 +393,18 @@
         var result = texts.join('\n');
 
         return result;
+    }
+
+    function b64EncodeUnicode(str) {
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,function toSolidBytes(match, p1) {
+            return String.fromCharCode('0x' + p1);
+        }));
+    }
+
+    function b64DecodeUnicode(str) {
+        return decodeURIComponent(atob(str).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
     }
 
     async function ifLoaded(div){
@@ -798,7 +810,7 @@
     }
 
     function kogoPrzypisac(){
-        if(document.querySelector(".WiolaCzyDawid") == null){
+        if(document.querySelector("#WiolaCzyDawid") == null){
             let x = document.createElement("div");
             x.id = "WiolaCzyDawid";
             x.classList = "row mb-10";
@@ -806,6 +818,7 @@
             x.innerHTML = "Kto był ostatni?";
 
             let url = encodeURI('https://helpdesk/v1/tickets?filter={"assigneeId":["3345","136557"]}&limit=1&offset=0&order={"creationDate":"desc"}');
+            let url2 = encodeURI('https://helpdesk/v1/tickets?filter={"assigneeId":["3345","136557"],"status":["New"]}&limit=50&offset=0&order={"creationDate":"desc"}');
 
             fetch(url, {
                 headers: {
@@ -817,7 +830,22 @@
                     document.querySelector("#details-users").append(x);
                 }
                 else {
-                    console.log("Nie znaleziono wyników ostatnieZgloszenie()");
+                    console.log("Nie znaleziono wyników ostatnieZgloszenie() url");
+                }
+            });
+
+            fetch(url2, {
+                headers: {
+                    Authorization: localStorage.getItem('HP-Token')
+                }
+            }).then(el => el.json()).then(el => {
+                if(el.items.length > 0){
+                    let wiola = el.items.filter(item=>item.assignee.id == '136557');
+                    let dawid = el.items.filter(item=>item.assignee.id == '3345');
+                    document.querySelector("#details-users").append(document.createElement("div").innerHTML = `Wiola: ${wiola.length} | Dawid: ${dawid.length}`);
+                }
+                else {
+                    console.log("Nie znaleziono wyników ostatnieZgloszenie() url2");
                 }
             });
         }
@@ -1308,7 +1336,7 @@
 
                 var beforeArray = [], afterArray = [];
                 if(!localStorage.getItem("HP-BeforeSubject") || localStorage.getItem("HP-BeforeSubject") == null || localStorage.getItem("HP-BeforeSubject") == ''){
-                    localStorage.setItem("HP-BeforeSubject",JSON.stringify(['Dodaj wybór','Usuń wybór','Z1','Z2','Z3','Z4','Z5','Z6','Z7','Z8','MWS','MWG']));
+                    localStorage.setItem("HP-BeforeSubject",JSON.stringify(['Dodaj wybór','Usuń wybór','Z1','Z2','Z3','Z4','Z5','Z6','Z7','Z8','MWS','MWG','SWD']));
                 }
                 if(!localStorage.getItem("HP-AfterSubject") || localStorage.getItem("HP-AfterSubject") == null || localStorage.getItem("HP-AfterSubject") == ''){
                     localStorage.setItem("HP-AfterSubject",JSON.stringify(['Dodaj wybór','Usuń wybór','Laptop','Terminal','Monitor','Drukarka']));
@@ -1363,6 +1391,10 @@
                         before.selectedIndex = 0;
                         let delBefore = prompt("Usuń opcję z 'Przed': ");
                         if(delBefore != null){
+                            if(delBefore == "Usuń wybór" || delBefore == "Dodaj wybór"){
+                                alert(b64DecodeUnicode('aGFoYSBhbGUgxZttaWVzem5lICgqXl9eKik='));
+                                return false;
+                            }
                             beforeArray = beforeArray.filter(function (letter) {
                                 return letter !== delBefore;
                             });
@@ -1405,6 +1437,10 @@
                         after.selectedIndex = 0;
                         let delAfter = prompt("Usuń opcję z 'Po': ");
                         if(delAfter != null){
+                            if(delAfter == "Usuń wybór" || delAfter == "Dodaj wybór"){
+                                alert(b64DecodeUnicode('aGFoYSBhbGUgxZttaWVzem5lICgqXl9eKik='));
+                                return false;
+                            }
                             afterArray = afterArray.filter(function (letter) {
                                 return letter !== delAfter;
                             });
